@@ -1,2 +1,2 @@
-variable cidr_block {}
+variable vpc_cidr_block {}
 variable environment_name {}
