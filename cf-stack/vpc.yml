@@ -13,6 +13,26 @@ Parameters:
     Description: 'The CIDR block for the VPC.'
     Default: '10.0.0.0/16'
 
+  PublicSubnet1CIDR:
+    Type: String
+    Description: 'The CIDR block for the first public subnet.'
+    Default: '10.0.1.0/24'
+
+  PublicSubnet2CIDR:
+    Type: String
+    Description: 'The CIDR block for the second public subnet.'
+    Default: '10.0.2.0/24'
+
+  PrivateSubnet1CIDR:
+    Type: String
+    Description: 'The CIDR block for the first private subnet.'
+    Default: '10.0.3.0/24'
+
+  PrivateSubnet2CIDR:
+    Type: String
+    Description: 'The CIDR block for the second private subnet.'
+    Default: '10.0.4.0/24'
+
 
 
 
@@ -46,6 +66,31 @@ Resources:
       InternetGatewayId: !Ref InternetGateway
 
 
+  PublicSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnet1CIDR
+  
+  PublicSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnet2CIDR
+
+  PrivateSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnet1CIDR
+
+  PrivateSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PrivateSubnet2CIDR
+
+
 
 
 
@@ -59,3 +104,4 @@ Output:
     Value: !Ref VPC
     Export:
       Name: !Sub '${EnvironmentName}-VPCId'
+
