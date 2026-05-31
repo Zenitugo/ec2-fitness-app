@@ -64,3 +64,23 @@ resource "aws_subnet" "private_subnet_2" {
     Name = "${var.environment_name}-private-subnet-2"
   }
 }
+
+
+
+######################### Create Elastic IP  #############################
+resource "aws_eip" "nat_eip_1" {
+  vpc = true
+
+  tags = {
+    Name = "${var.environment_name}-nat-eip-1"
+  }
+}
+
+resource "aws_eip" "nat_eip_2" {
+  vpc = true
+
+  tags = {
+    Name = "${var.environment_name}-nat-eip-2"
+  }
+}
+
