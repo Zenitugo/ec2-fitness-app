@@ -127,3 +127,24 @@ resource "aws_route_table" "private_rt_2" {
         Name = "${var.environment_name}-private-rt"
     }
 }
+
+
+############################ Create Routes  #############################
+resource "aws_route" "public_route" {
+  route_table_id         = aws_route_table.public_rt.id
+  destination_cidr_block = "0.0.0/0"
+  gateway_id             = aws_internet_gateway.igw.id
+}
+
+
+resource "aws_route" "private_route_1" {
+  route_table_id         = aws_route_table.private_rt_1.id
+  destination_cidr_block = "0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat_gw_1.id
+}
+
+resource "aws_route" "private_route_2" {
+  route_table_id         = aws_route_table.private_rt_2.id
+  destination_cidr_block = "0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat_gw_2.id
+}
