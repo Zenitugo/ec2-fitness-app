@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating a the network for the infrastructure'
+
+Parameters:
+
+
+
+
+
+
+
+Resources:
+
+
+
+
+
+
+
+
+
+Output:
