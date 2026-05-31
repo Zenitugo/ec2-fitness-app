@@ -8,7 +8,11 @@ Parameters:
     AllowedPattern: '^[a-zA-Z0-9]+$'
     ConstraintDescription: 'Environment name must be alphanumeric and cannot contain spaces.'
   
-  
+  VpcCIDR:
+    Type: String
+    Description: 'The CIDR block for the VPC.'
+    Default: '10.0.0.0/16'
+
 
 
 
@@ -17,6 +21,15 @@ Parameters:
 
 
 Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-vpc'
 
 
 
@@ -27,3 +40,8 @@ Resources:
 
 
 Output:
+  VPCId:
+    Description: 'The ID of the VPC.'
+    Value: !Ref VPC
+    Export:
+      Name: !Sub '${EnvironmentName}-VPCId'
