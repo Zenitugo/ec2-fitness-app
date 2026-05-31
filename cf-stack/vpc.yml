@@ -51,6 +51,7 @@ Resources:
         - Key: Name
           Value: !Sub '${EnvironmentName}-vpc'
 
+ #################### Creates an Internet Gateway and attaches it to the VPC ###############
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
@@ -66,6 +67,7 @@ Resources:
       InternetGatewayId: !Ref InternetGateway
 
 
+###############  Creates public and private subnets in two availability zones ###############
   PublicSubnet1:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -95,6 +97,8 @@ Resources:
       VpcId: !Ref VPC
       CidrBlock: !Ref PrivateSubnet2CIDR
       AvailabilityZone: !Select [ 1, !GetAZs '' ]
+
+############  Creates Elastic IPs for the NAT Gateways ############
   
   ElasticIP1:
     Type: 'AWS::EC2::EIP'
@@ -105,6 +109,8 @@ Resources:
     Type: 'AWS::EC2::EIP'
     Properties:
       Domain: vpc
+
+############  Creates NAT Gateways in the public subnets ############
 
   NatGateway1:
     Type: 'AWS::EC2::NatGateway'
@@ -118,6 +124,7 @@ Resources:
       AllocationId: !GetAtt ElasticIP2.AllocationId
       SubnetId: !Ref PublicSubnet2
 
+############  Creates route tables for the public and private subnets ############
 
   PublicRouteTable:
     Type: 'AWS::EC2::RouteTable'
@@ -142,6 +149,28 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub '${EnvironmentName}-private-rt2'
+
+###########  Creates routes for the public and private subnets ############
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+
+  PrivateRoute1:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: '0.0.0.0/0'
+      NatGatewayId: !Ref NatGateway1
+
+  PrivateRoute2:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2 
+      DestinationCidrBlock: '0.0.0.0/0'
+      NatGatewayId: !Ref NatGateway2
 
 
 
