@@ -17,3 +17,50 @@ resource "aws_internet_gateway" "igw" {
         Name = "${var.environment_name}-igw"
     }  
 }
+
+
+################################  Create Public Subnets  #############################
+resource "aws_subnet" "public_subnet_1" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = cidrsubnet(var.cidr_block, 8, 1)
+  availability_zone = data.aws_availability_zones.available.names[0]
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${var.environment_name}-public-subnet-1"
+  }
+}
+
+resource "aws_subnet" "public_subnet_2" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = cidrsubnet(var.cidr_block, 8, 2)
+  availability_zone = data.aws_availability_zones.available.names[1]
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${var.environment_name}-public-subnet-2"
+  }
+}
+
+
+
+##############################  Create Private Subnets  #############################
+resource "aws_subnet" "private_subnet_1" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = cidrsubnet(var.cidr_block, 8, 3)
+  availability_zone = data.aws_availability_zones.available.names[0]
+
+  tags = {
+    Name = "${var.environment_name}-private-subnet-1"
+  }
+}
+
+resource "aws_subnet" "private_subnet_2" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = cidrsubnet(var.cidr_block, 8, 4)
+  availability_zone = data.aws_availability_zones.available.names[1]
+
+  tags = {
+    Name = "${var.environment_name}-private-subnet-2"
+  }
+}
