@@ -95,7 +95,16 @@ Resources:
       VpcId: !Ref VPC
       CidrBlock: !Ref PrivateSubnet2CIDR
       AvailabilityZone: !Select [ 1, !GetAZs '' ]
+  
+  ElasticIP1:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
 
+  ElasticIP2:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
 
 
 
