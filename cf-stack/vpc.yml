@@ -201,7 +201,7 @@ Resources:
 
 
 
-Output:
+Outputs:
   VPCId:
     Description: 'The ID of the VPC.'
     Value: !Ref VPC
