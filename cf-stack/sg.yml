@@ -1,0 +1,97 @@
+######################### Security Group Template #########################
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating security groups for the infrastructure'
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'The name of the environment. This will be used as a prefix for all resources created by this template.'
+    AllowedPattern: '^[a-zA-Z0-9]+$'
+    ConstraintDescription: 'Environment name must be alphanumeric and cannot contain spaces.'
+
+
+Resources:
+  AlbSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Security group for ALB'
+      VpcId: !ImportValue 
+        Fn::Sub: '${EnvironmentName}-vpc-id'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-alb-sg'
+
+  FrontendServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Security group for frontend servers'
+      VpcId: !ImportValue 
+        Fn::Sub: '${EnvironmentName}-vpc-id'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          SourceSecurityGroupId: !Ref AlbSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-frontend-server-sg'
+
+
+  BackendServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Security group for backend servers'
+      VpcId: !ImportValue 
+        Fn::Sub: '${EnvironmentName}-vpc-id'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          SourceSecurityGroupId: !Ref FrontendServerSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-backend-server-sg'
+
+  DatabaseServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Security group for database servers'
+      VpcId: !ImportValue 
+        Fn::Sub: '${EnvironmentName}-vpc-id'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref BackendServerSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-database-server-sg'
+
+Outputs:
+  AlbSecurityGroupId:
+    Description: 'The ID of the security group for the ALB'
+    Value: !Ref AlbSecurityGroup
+    Export:
+      Name: !Sub '${EnvironmentName}-alb-sg-id'
+
+  FrontendServerSecurityGroupId:
+    Description: 'The ID of the security group for the frontend servers'
+    Value: !Ref FrontendServerSecurityGroup
+    Export:
+      Name: !Sub '${EnvironmentName}-frontend-server-sg-id'
+      
+  BackendServerSecurityGroupId:
+    Description: 'The ID of the security group for the backend servers'
+    Value: !Ref BackendServerSecurityGroup
+    Export:
+      Name: !Sub '${EnvironmentName}-backend-server-sg-id'
+
+  DatabaseServerSecurityGroupId:
+    Description: 'The ID of the security group for the database servers'
+    Value: !Ref DatabaseServerSecurityGroup
+    Export:
+      Name: !Sub '${EnvironmentName}-database-server-sg-id'
