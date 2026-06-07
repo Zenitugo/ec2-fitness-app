@@ -14,6 +14,10 @@ Resources:
     Type: 'AWS::ECR::Repository'
     Properties:
       RepositoryName: !Sub '${EnvironmentName}-frontend-repo'
+      imageScanningConfiguration:
+        scanOnPush: true
+      forceDelete: true
+      imageTagMutability: MUTABLE
       Tags:
         - Key: Name
           Value: !Sub '${EnvironmentName}-frontend-repo'
@@ -22,6 +26,10 @@ Resources:
     Type: 'AWS::ECR::Repository'
     Properties:
       RepositoryName: !Sub '${EnvironmentName}-backend-repo'
+      imageScanningConfiguration:
+        scanOnPush: true
+      forceDelete: true
+      imageTagMutability: MUTABLE
       Tags:
         - Key: Name
           Value: !Sub '${EnvironmentName}-backend-repo'
