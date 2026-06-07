@@ -1,0 +1,41 @@
+######################### ECR Repository Template #########################
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating container repositories for the infrastructure'
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'The name of the environment. This will be used as a prefix for all resources created by this template.'
+    AllowedPattern: '^[a-zA-Z0-9]+$'
+    ConstraintDescription: 'Environment name must be alphanumeric and cannot contain spaces.'
+
+
+Resources:
+  FrontendRepository:
+    Type: 'AWS::ECR::Repository'
+    Properties:
+      RepositoryName: !Sub '${EnvironmentName}-frontend-repo'
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-frontend-repo'
+
+  BackendRepository:
+    Type: 'AWS::ECR::Repository'
+    Properties:
+      RepositoryName: !Sub '${EnvironmentName}-backend-repo'
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-backend-repo'
+
+
+Outputs:
+  FrontendRepositoryUri:
+    Description: 'The URI of the ECR repository for the frontend application'
+    Value: !GetAtt FrontendRepository.RepositoryUri
+    Export:
+      Name: !Sub '${EnvironmentName}-frontend-repo-uri'
+
+  BackendRepositoryUri:
+    Description: 'The URI of the ECR repository for the backend application'
+    Value: !GetAtt BackendRepository.RepositoryUri
+    Export:
+      Name: !Sub '${EnvironmentName}-backend-repo-uri'
