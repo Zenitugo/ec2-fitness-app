@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating an Instance Profilefor the infrastructure'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'The name of the environment. This will be used as a prefix for all resources created by this template.'
+    AllowedPattern: '^[a-zA-Z0-9]+$'
+    ConstraintDescription: 'Environment name must be alphanumeric and cannot contain spaces.'
+
+  MediaBucketName:
+    Type: String
+    Default: 'fittrack-media'
+    Description: 'The name of the S3 bucket storing workout media'
+  
+  DatabaseSecretArn:
+    Type: String
+    Default: 'arn:aws:secretsmanager:us-east-1:123456789012:secret:db-password-abcde'
+    Description: 'The full ARN of the Secrets Manager database secret'
+
+  InstanceProfileName:
+    Type: String
+    Default: 'fitness-app-ec2-profile'
+    Description: 'The name of the IAM Instance Profile to create'
+
+Resources:
+  # 1 & 2. IAM Role with Trust Policy
+  WorkoutAppEC2Role:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'workout-app-ec2-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service:
+                - 'ec2.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      
+      # 5. Attaching AWS Managed Policies (SSM and CloudWatch)
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore'
+        - 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'
+      
+      # 3 & 4. Custom Inline Policy (ECR, S3, Secrets Manager)
+      Policies:
+        - PolicyName: 'workout-app-ec2-custom-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # ECR: Pull Docker images on startup
+              - Sid: 'ECRImagePull'
+                Effect: 'Allow'
+                Action:
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:BatchGetImage'
+                Resource: '*'
+
+              # S3: Upload and retrieve workout media
+              - Sid: 'S3MediaAccess'
+                Effect: 'Allow'
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:ListBucket'
+                Resource:
+                  - !Sub 'arn:aws:s3:::${MediaBucketName}'
+                  - !Sub 'arn:aws:s3:::${MediaBucketName}/*'
+
+              # Secrets Manager: Read database password
+              - Sid: 'SecretsManagerRead'
+                Effect: 'Allow'
+                Action:
+                  - 'secretsmanager:GetSecretValue'
+                Resource: !Ref DatabaseSecretArn
+
+  # 6. Final Instance Profile (To attach to your EC2 instance)
+  WorkoutAppEC2InstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      InstanceProfileName: !Ref InstanceProfileName
+      Roles:
+        - !Ref WorkoutAppEC2Role
+
+Outputs:
+  InstanceProfileName:
+    Description: 'Use this name in your EC2 launch configuration or instance resource'
+    Value: !Ref WorkoutAppEC2InstanceProfile
+    Export:
+      Name: !Sub '${EnvironmentName}-InstanceProfileName'
