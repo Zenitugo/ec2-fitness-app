@@ -35,8 +35,8 @@ data "aws_iam_policy_document" "ec2_permissions" {
       "s3:ListBucket"
     ]
     resources = [
-      "arn:aws:s3:::your-workout-media-bucket-name",
-      "arn:aws:s3:::your-workout-media-bucket-name/*"
+      "var.bucket_arn", # Bucket ARN from S3 module output
+      "var.bucket_arn/*"
     ]
   }
 
