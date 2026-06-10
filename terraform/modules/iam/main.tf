@@ -39,3 +39,27 @@ resource "aws_iam_instance_profile" "ec2_instance_profile" {
 }
 
 
+# S3 Bucket Policy allowing CloudFront OAC access
+resource "aws_s3_bucket_policy" "allow_cloudfront_oac" {
+  bucket = var.frontend_bucket_name # Pass the bucket name from the S3 module output
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowCloudFrontServicePrincipalReadOnly"
+        Effect    = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${var.frontend_bucket_arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = "${var.cloudfront_distribution_arn}"
+          }
+        }
+      }
+    ]
+  })
+}
