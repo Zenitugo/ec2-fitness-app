@@ -1,0 +1,82 @@
+######################### CloudFront Template #########################
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating CloudFront distributions for the infrastructure'
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'The name of the environment. This will be used as a prefix for all resources created by this template.'
+    AllowedPattern: '^[a-zA-Z0-9]+$'
+    ConstraintDescription: 'Environment name must be alphanumeric and cannot contain spaces.'
+
+
+Resources:
+  ########################## CloudFront Distribution for Frontend Assets #########################
+  # CloudFront Origin Access Control (OAC)
+  CloudFrontOAC:
+    Type: 'AWS::CloudFront::OriginAccessControl'
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Ref CloudFrontOACName
+        Description: 'OAC for React Frontend S3 Bucket'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  FrontendDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        isIPV6Enabled: true
+        defaultRootObject: index.html
+        Origins:
+          - DomainName: !Ref BucketRegionalDomainName
+            Id: S3-Frontend
+            OriginAccessControlId: !GetAtt CloudFrontOAC.Id
+            S3OriginConfig:
+              OriginAccessIdentity: '' # Must be an empty string when using OAC
+
+        DefaultCacheBehavior:
+          TargetOriginId: S3-Frontend
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
+        # SPA Routing: Redirect 403 and 404 to index.html with a 200 status
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: none
+
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+
+
+Outputs:
+  DistributionId:
+    Description: ID of the CloudFront Distribution
+    Value: !Ref FrontendDistribution
+
+  DistributionDomainName:
+    Description: Domain name of the CloudFront Distribution
+    Value: !GetAtt FrontendDistribution.DomainName
