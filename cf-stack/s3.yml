@@ -1,0 +1,53 @@
+######################### S3 Template #########################
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating s3 bucketsfor the infrastructure'
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'The name of the environment. This will be used as a prefix for all resources created by this template.'
+    AllowedPattern: '^[a-zA-Z0-9]+$'
+    ConstraintDescription: 'Environment name must be alphanumeric and cannot contain spaces.'
+
+
+
+Resources:  
+  ########################## S3 Bucket for media uploads #########################
+  MediaBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${EnvironmentName}-media-bucket'
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  ########################## S3 Bucket for frontend assets #########################
+  FrontendBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${EnvironmentName}-frontend-bucket'
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+Outputs:
+  MediaBucketName:
+    Description: 'The name of the media S3 bucket'
+    Value: !Ref MediaBucket
+  FrontendBucketName:
+    Description: 'The name of the frontend S3 bucket'
+    Value: !Ref FrontendBucket
