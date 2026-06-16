@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: RDS instance stack for fittrack project. 
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - staging
+      - dev
+      - prod
+    Description: Environment name used to tag and name all resources
+
+  allocatedStorage:
+    Type: Number
+    Default: 20
+    Description: Allocated storage for RDS instance in GB
+
+  dbInstanceClass:
+    Type: String
+    Default: db.t3.micro
+    Description: DB instance class for RDS instance
+
+  dbengine:
+    Type: String
+    Default: postgres
+    Description: Database engine for RDS instance (e.g. postgres, mysql)
+
+  dbengineVersion:
+    Type: String
+    Default: "16.13"
+    Description: Database engine version for RDS instance
+
+  storageType:
+    Type: String
+    Default: gp2
+    Description: Storage type for RDS instance (e.g. gp2, io1)
+
+  dbName:
+    Type: String
+    Default: fittrackdb
+    Description: Name of the database to create in RDS instance
+
+ 
+
+  dbMasterUsername:
+    Type: String
+    Default: dbadmin
+    Description: Master username for RDS instance
+  Family:
+    Type: String
+    Default: postgres16
+  
+Resources:
+
+  SubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: !Sub "${Environment}-rds-subnet-group"
+      DBSubnetGroupDescription: Subnet group for RDS instance
+      SubnetIds:
+        - Fn::ImportValue: !Sub "${Environment}-private-subnet-1-id"
+        - Fn::ImportValue: !Sub "${Environment}-private-subnet-2-id"
+
+  RDSParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Family: !Ref Family
+      Description: Custom parameter group
+      Parameters:
+        rds.force_ssl: "0"    # ← disables SSL requirement
+  
+  FittrackRDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Sub "${Environment}-fittrackdb-instance"
+      DBParameterGroupName: !Ref RDSParameterGroup
+      AllocatedStorage: !Ref allocatedStorage
+      DBInstanceClass: !Ref dbInstanceClass
+      DBName: !Ref dbName1
+      Engine: !Ref dbengine
+      EngineVersion: !Ref dbengineVersion
+      StorageType: !Ref storageType
+      MasterUsername: !Ref dbMasterUsername
+      ManageMasterUserPassword: true
+      VPCSecurityGroups:
+        - Fn::ImportValue: !Sub "${Environment}-rds-sg-id"
+      DBSubnetGroupName: !Ref SubnetGroup
+      MultiAZ: true
+      PubliclyAccessible: false
+      Tags:
+        - Key: Name
+          Value: !Sub "${Environment}-rds-instance"
+
+
+Outputs:
+  FittrackRDSInstanceEndpoint:
+    Description: Endpoint for fittrack RDS instance
+    Value: !GetAtt FittrackRDSInstance.Endpoint.Address
+    Export:
+      Name: !Sub "${dbName}-endpoint"
+
+
+  FittrackDBIdentifier:
+    Description: DB instance identifier for Fittrack RDS instance
+    Value: !Ref FittrackRDSInstance
+    Export:
+      Name: !Sub "${Environment}-${dbName}-identifier"
+
+
+
+  FittrackDBSecretArn:
+    Value: !GetAtt FittrackRDSInstance.MasterUserSecret.SecretArn
+    Export:
+      Name: !Sub "${Environment}-fittrackdb-master-secret-arn"
+     
+
+     
