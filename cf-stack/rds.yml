@@ -39,7 +39,7 @@ Parameters:
 
   dbName:
     Type: String
-    Default: fittrackdb
+    Default: fittrack
     Description: Name of the database to create in RDS instance
 
  
@@ -78,7 +78,7 @@ Resources:
       DBParameterGroupName: !Ref RDSParameterGroup
       AllocatedStorage: !Ref allocatedStorage
       DBInstanceClass: !Ref dbInstanceClass
-      DBName: !Ref dbName1
+      DBName: !Ref dbName
       Engine: !Ref dbengine
       EngineVersion: !Ref dbengineVersion
       StorageType: !Ref storageType
