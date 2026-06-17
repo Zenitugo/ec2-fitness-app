@@ -1,0 +1,63 @@
+##################### Cloud Watch Configuration #####################
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating an Cloud Watch for Monitoring CPU Utilization of the Auto Scaling group' 
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'The name of the environment. This will be used as a prefix for all resources created by this template.'
+    AllowedPattern: '^[a-zA-Z0-9]+$'
+    ConstraintDescription: 'Environment name must be alphanumeric and cannot contain spaces.'
+
+MinThreshold:
+    Type: Number
+    Description: 'The CPU utilization threshold for scaling down the Auto Scaling group.'
+    Default: 30
+
+
+MaxThreshold:
+    Type: Number
+    Description: 'The CPU utilization threshold for scaling up the Auto Scaling group.' 
+    Default: 70
+
+Resources:
+  CPUHighAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmName: !Sub '${EnvironmentName}-cpu-high-alarm'
+      AlarmDescription: 'Alarm when CPU exceeds 70%'
+      Namespace: 'AWS/EC2'
+      MetricName: 'CPUUtilization'
+      Dimensions:
+        - Name: AutoScalingGroupName
+          Value: !ImportValue 
+            Fn::Sub: '${EnvironmentName}-AutoScalingGroupName'
+      Statistic: 'Average'
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref MaxThreshold
+      ComparisonOperator: 'GreaterThanThreshold'
+      AlarmActions:
+        - !ImportValue 
+          Fn::Sub: '${EnvironmentName}-ScaleUpPolicyArn'
+
+  CPULowAlarm:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmName: !Sub '${EnvironmentName}-cpu-low-alarm'
+      AlarmDescription: 'Alarm when CPU falls below 30%'
+      Namespace: 'AWS/EC2'
+      MetricName: 'CPUUtilization'
+      Dimensions:
+        - Name: AutoScalingGroupName
+          Value: !ImportValue 
+            Fn::Sub: '${EnvironmentName}-AutoScalingGroupName'
+      Statistic: 'Average'
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref MinThreshold
+      ComparisonOperator: 'LessThanThreshold'
+      AlarmActions:
+        - !ImportValue 
+          Fn::Sub: '${EnvironmentName}-ScaleDownPolicyArn'
