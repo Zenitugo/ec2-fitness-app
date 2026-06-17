@@ -1,0 +1,70 @@
+######################## EC2 Launch Template ########################
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating an EC2 launch template for the infrastructure' 
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'The name of the environment. This will be used as a prefix for all resources created by this template.'
+    AllowedPattern: '^[a-zA-Z0-9]+$'
+    ConstraintDescription: 'Environment name must be alphanumeric and cannot contain spaces.'
+
+  Ami:
+    Type: String
+    Description: 'The AMI ID for the EC2 instances.'
+    Default: 'ami-051eaec1417c5d4ae' # Ubuntu AMI (HVM), SSD Volume Type
+
+  KeyName:
+    Type: String
+    Description: 'The name of the EC2 key pair to allow SSH access to the instances.'
+    Default: 'java-key'
+
+  InstanceType:
+    Type: String
+    Description: 'The EC2 instance type for the instances.'
+    Default: 't3.micro'
+
+
+
+
+
+
+Resources:
+  EC2LaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Properties:
+      LaunchTemplateName: !Sub '${EnvironmentName}-ec2-launch-template'
+      LaunchTemplateData:
+        ImageId: !Ref Ami
+        InstanceType: !Ref InstanceType
+        IamInstanceProfile: !ImportValue
+          Fn::Sub: '${EnvironmentName}-InstanceProfileName'
+        UserData:
+        SecurityGroupIds:
+          - !ImportValue 
+            Fn::Sub: '${EnvironmentName}-frontend-server-sg-id'
+        KeyName: !Ref KeyName
+        MetadataOptions:
+          HttpTokens: required
+          HttpPutResponseHopLimit: 1
+          HttpEndpoint: enabled
+          instanceMetadataTags: enabled
+
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub '${EnvironmentName}-ec2-instance'
+
+Outputs:
+  LaunchTemplateId:
+    Description: 'The ID of the EC2 launch template.'
+    Value: !Ref EC2LaunchTemplate
+    Export:
+      Name: !Sub '${EnvironmentName}-LaunchTemplateId'
+
+  LaunchTemplateName:
+    Description: 'The name of the EC2 launch template.'
+    Value: !GetAtt EC2LaunchTemplate.LaunchTemplateName
+    Export:
+      Name: !Sub '${EnvironmentName}-LaunchTemplateName'
