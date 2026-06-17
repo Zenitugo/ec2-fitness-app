@@ -1,0 +1,91 @@
+####################### Create an autoscaling group #######################
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating an Auto Scaling group for the infrastructure'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'The name of the environment. This will be used as a prefix for all resources created by this template.'
+    AllowedPattern: '^[a-zA-Z0-9]+$'
+    ConstraintDescription: 'Environment name must be alphanumeric and cannot contain spaces.'
+
+  DesiredCapacity:
+    Type: Number
+    Description: 'The desired number of EC2 instances in the Auto Scaling group.'
+    Default: 2
+    MinValue: 1
+
+  MaxSize:
+    Type: Number
+    Description: 'The maximum number of EC2 instances in the Auto Scaling group.'
+    Default: 4
+    MinValue: 1
+
+  MinSize:
+    Type: Number
+    Description: 'The minimum number of EC2 instances in the Auto Scaling group.'
+    Default: 1
+    MinValue: 1
+
+
+Resources:  
+  AutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      AutoScalingGroupName: !Sub '${EnvironmentName}-auto-scaling-group'
+      LaunchTemplate:
+        LaunchTemplateId: !ImportValue 
+          Fn::Sub: '${EnvironmentName}-ec2-launch-template-id'
+        Version: !ImportValue 
+          Fn::Sub: '${EnvironmentName}-ec2-launch-template-version'
+      MinSize: !Ref MinSize
+      MaxSize: !Ref MaxSize
+      DesiredCapacity: !Ref DesiredCapacity
+      VPCZoneIdentifier:
+        - !ImportValue 
+          Fn::Sub: '${EnvironmentName}-public-subnet-1-id'
+        - !ImportValue 
+          Fn::Sub: '${EnvironmentName}-public-subnet-2-id'
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-auto-scaling-instance'
+          PropagateAtLaunch: true
+
+  AutoscalingScaleUpPolicy:
+    Type: 'AWS::AutoScaling::ScalingPolicy'
+    Properties:
+      AutoScalingGroupName: !Ref AutoScalingGroup
+      PolicyType: SimpleScaling
+      AdjustmentType: ChangeInCapacity
+        - ScalingAdjustment: 1
+          MetricIntervalLowerBound: 0
+  
+
+  AutoscalingScaleDownPolicy:
+    Type: 'AWS::AutoScaling::ScalingPolicy'
+    Properties:
+      AutoScalingGroupName: !Ref AutoScalingGroup
+      PolicyType: SimpleScaling
+      AdjustmentType: ChangeInCapacity
+        - ScalingAdjustment: -1
+          MetricIntervalUpperBound: 0
+
+
+Outputs:
+  AutoScalingGroupName:
+    Description: 'The name of the Auto Scaling group.'
+    Value: !Ref AutoScalingGroup
+    Export:
+      Name: !Sub '${EnvironmentName}-AutoScalingGroupName'
+
+  ScaleUpPolicyArn:
+    Description: 'The ARN of the scale-up policy.'
+    Value: !GetAtt AutoscalingScaleUpPolicy.Arn
+    Export:
+      Name: !Sub '${EnvironmentName}-ScaleUpPolicyArn'
+
+  ScaleDownPolicyArn:
+    Description: 'The ARN of the scale-down policy.'
+    Value: !GetAtt AutoscalingScaleDownPolicy.Arn
+    Export:
+      Name: !Sub '${EnvironmentName}-ScaleDownPolicyArn'
