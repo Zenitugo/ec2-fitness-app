@@ -8,7 +8,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high_alarm" {
   namespace           = "AWS/EC2"
   period              = 60 # 60 seconds per evaluation period
   statistic           = "Average"
-  threshold           = 70
+  threshold           = var.cpu_high_threshold # 70% threshold for scaling up
 
   dimensions = {
     AutoScalingGroupName = var.autoscaling_group_name
@@ -27,7 +27,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_low_alarm" {
   namespace           = "AWS/EC2"
   period              = 60
   statistic           = "Average"
-  threshold           = 30
+  threshold           = var.cpu_low_threshold # 30% threshold for scaling down
 
   dimensions = {
     AutoScalingGroupName = var.autoscaling_group_name
