@@ -12,7 +12,6 @@ resource "aws_db_instance" "fittrack_rds" {
   instance_class           = "db.t3.micro"
   db_name                  = "${var.project_name}"
   username                 = var.db_username
-  password                 = var.db_password
   db_subnet_group_name     = aws_db_subnet_group.fittrack_rds.name
   vpc_security_group_ids   = [var.database_sg]
   publicly_accessible      = false
