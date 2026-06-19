@@ -41,6 +41,9 @@ Resources:
       MinSize: !Ref MinSize
       MaxSize: !Ref MaxSize
       DesiredCapacity: !Ref DesiredCapacity
+      TargetGroupARNs:
+        - !ImportValue 
+          Fn::Sub: '${EnvironmentName}-TargetGroupArn'
       VPCZoneIdentifier:
         - !ImportValue 
           Fn::Sub: '${EnvironmentName}-public-subnet-1-id'
