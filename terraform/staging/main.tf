@@ -10,7 +10,7 @@ module "ec2_template" {
   image_id                            = var.image_id
   instance_type                       = var.instance_type
   backend_sg                          = module.sg.backend_sg
-  Instance_profile_name               = module.iam.Instance_profile_name 
+  instance_profile_name               = module.iam.instance_profile_name 
   environment_name                    = var.environment_name
 }
 
