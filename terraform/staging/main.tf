@@ -9,7 +9,7 @@ module "ec2_template" {
   source                              = "../modules/ec2-template"
   image_id                            = var.image_id
   instance_type                       = var.instance_type
-  ec2_sg                              = module.sg.ec2_sg
+  backend_sg                          = module.sg.backend_sg
   Instance_profile_name               = module.iam.Instance_profile_name 
   environment_name                    = var.environment_name
 }
