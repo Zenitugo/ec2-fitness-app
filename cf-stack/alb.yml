@@ -1,0 +1,96 @@
+######################### Creation of an Application Load Balancer (ALB) #########################
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating an Application Load Balancer for the infrastructure'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'The name of the environment. This will be used as a prefix for all resources created by this template.'
+    AllowedPattern: '^[a-zA-Z0-9]+$'
+    ConstraintDescription: 'The environment name must be a valid string containing only alphanumeric characters.'
+  
+  loadBalancerType:
+    Type: String
+    Description: 'The type of load balancer to create. Valid values are "application" or "network".'
+    Default: 'application'
+    AllowedValues:
+      - application
+      - network
+    ConstraintDescription: 'The load balancer type must be either "application" or "network".'
+
+  Scheme:
+    Type: String
+    Description: 'The scheme of the load balancer. Valid values are "internet-facing" or "internal".'
+    Default: 'internet-facing'
+    AllowedValues:
+      - internet-facing
+      - internal
+    ConstraintDescription: 'The scheme must be either "internet-facing" or "internal".'
+
+  TargetGroupPort:
+    Type: Number
+    Description: 'The port on which the target group will receive traffic.'
+    Default: 8000
+
+  TargetType:
+    Type: String
+    Description: 'The type of target that you must specify when registering targets with this target group. Valid values are "instance", "ip", or "lambda".'
+    Default: 'instance'
+    AllowedValues:
+      - instance
+      - ip
+      - lambda
+    ConstraintDescription: 'The target type must be either "instance", "ip", or "lambda".'
+
+
+Resources:
+  ApplicationLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: !Sub '${EnvironmentName}-alb'
+      Scheme: !Ref Scheme
+      Subnets:
+        - !ImportValue 
+          Fn::Sub: '${EnvironmentName}-PublicSubnet1Id'
+        - !ImportValue 
+          Fn::Sub: '${EnvironmentName}-PublicSubnet2Id'
+      SecurityGroups:
+        - !ImportValue 
+          Fn::Sub: '${EnvironmentName}-alb-sg-id'
+      Type: !Ref loadBalancerType
+      LoadBalancerAttributes:
+        - Key:  'deletion_protection.enabled'
+          Value: 'false'
+
+  TargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Name: !Sub '${EnvironmentName}-target-group'
+      Port: !Ref TargetGroupPort
+      Protocol: HTTP
+      TargetType: !Ref TargetType
+      VpcId: !ImportValue 
+        Fn::Sub: '${EnvironmentName}-VpcId'
+      HealthCheckPath: /health
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+
+
+  Listener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+Outputs:
+  TargetGroupArn:
+    Description: 'The ARN of the target group.'
+    Value: !Ref TargetGroup
+    Export:
+      Name: !Sub '${EnvironmentName}-TargetGroupArn'
