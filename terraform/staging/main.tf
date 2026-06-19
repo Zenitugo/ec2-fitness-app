@@ -79,3 +79,12 @@ module "cloudwatch" {
   scale_up_policy_arn                 = module.autoscaling.scale_up_policy_arn
   scale_down_policy_arn               = module.autoscaling.scale_down_policy_arn
 }
+
+module "alb" {
+  source                              = "../modules/alb"
+  alb_sg                              = module.sg.alb_sg
+  public_subnet_1_id                  = module.vpc.public_subnet_1_id
+  public_subnet_2_id                  = module.vpc.public_subnet_2_id
+  environment_name                    = var.environment_name
+  vpc_id                              = module.vpc.vpc_id
+}
