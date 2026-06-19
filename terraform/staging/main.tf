@@ -40,7 +40,6 @@ module "iam" {
 module "s3" {
   source                              = "../modules/s3"
   bucket_prefix                       = var.bucket_prefix
-  region                              = var.region
 }
 
 module "cloudfront" {
