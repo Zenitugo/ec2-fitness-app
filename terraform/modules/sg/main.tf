@@ -2,7 +2,7 @@
 resource "aws_security_group" "alb_sg" {
   name        = "${var.environment_name}-alb-sg"
   description = "Security group for the ALB"
-  vpc_id      = aws_vpc.vpc.id 
+  vpc_id      = var.vpc_id 
 
     ingress {
         description      = "Allow HTTP traffic"
