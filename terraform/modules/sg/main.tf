@@ -27,7 +27,7 @@ resource "aws_security_group" "alb_sg" {
 resource "aws_security_group" "frontend_sg" {
     name        = "${var.environment_name}-frontend-sg"
     description = "Security group for the frontend servers"
-    vpc_id      = aws_vpc.vpc.id
+    vpc_id      = var.vpc_id
 
     ingress {
         description      = "Allow HTTP traffic from ALB"
@@ -50,7 +50,7 @@ resource "aws_security_group" "frontend_sg" {
 resource "aws_security_group" "backend_sg" {
     name        = "${var.environment_name}-backend-sg"
     description = "Security group for the backend servers"
-    vpc_id      = aws_vpc.vpc.id
+    vpc_id      = var.vpc_id
 
     ingress {
         description      = "Allow traffic from frontend servers"
@@ -74,7 +74,7 @@ resource "aws_security_group" "backend_sg" {
 resource "aws_security_group" "database_sg" {
     name = "${var.environment_name}-database-sg"
     description = "Security group for the database servers"
-    vpc_id      = aws_vpc.vpc.id
+    vpc_id      = var.vpc_id
 
     ingress {
         description      = "Allow traffic from backend servers"
