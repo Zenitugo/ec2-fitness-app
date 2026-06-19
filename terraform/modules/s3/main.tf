@@ -3,8 +3,6 @@
   # Media Bucket (Fully Private)
 resource "aws_s3_bucket" "media_bucket" {
   bucket_prefix = var.bucket_prefix
-  region        = var.region
-  private      = true
 }
 
 resource "aws_s3_bucket_public_access_block" "media_bucket_privacy" {
