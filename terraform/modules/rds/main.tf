@@ -10,7 +10,7 @@ resource "aws_db_instance" "fittrack_rds" {
   engine                   = "postgres"
   engine_version           = "16.13"
   instance_class           = "db.t3.micro"
-  db_name                  = "${var.project_name}_db"
+  db_name                  = "${var.project_name}"
   username                 = var.db_username
   password                 = var.db_password
   db_subnet_group_name     = aws_db_subnet_group.fittrack_rds.name
