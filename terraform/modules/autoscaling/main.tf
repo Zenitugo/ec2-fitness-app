@@ -9,7 +9,9 @@ resource "aws_autoscaling_group" "fitness_app_autoscaling_group" {
     id      = var.launch_template
     version = "$Latest"
   }
-  vpc_zone_identifier       = [var.private_subnet_1_id, var.private_subnet_2_id] 
+  vpc_zone_identifier       = [var.private_subnet_1_id, var.private_subnet_2_id]
+
+  target_group_arns        = [var.target_group_arn] 
 }
 
 
