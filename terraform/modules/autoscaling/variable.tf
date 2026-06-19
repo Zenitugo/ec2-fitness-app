@@ -5,3 +5,4 @@ variable max_size {}
 variable desired_capacity {}
 variable environment_name {}
 variable launch_template {}
+variable target_group_arn {}
