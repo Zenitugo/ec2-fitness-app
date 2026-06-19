@@ -73,11 +73,10 @@ module "autoscaling" {
 
 module "cloudwatch" {
   source                              = "../modules/cloudwatch"
-  environment_name                    = var.environment_name
   fitness_app_autoscaling_group_name  = module.autoscaling.fitness_app_autoscaling_group_name
   scale_up_policy_arn                 = module.autoscaling.scale_up_policy_arn
   scale_down_policy_arn               = module.autoscaling.scale_down_policy_arn
-  autoscaling_group_name             = module.autoscaling.autoscaling_group_name
+  autoscaling_group_name              = module.autoscaling.autoscaling_group_name
 }
 
 module "alb" {
