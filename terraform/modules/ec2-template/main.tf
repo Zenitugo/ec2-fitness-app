@@ -7,7 +7,7 @@ resource "aws_launch_template" "fitness_app_launch_template" {
   vpc_security_group_ids = [var.backend_sg]
 
   iam_instance_profile {
-    name = var.Instance_profile_name
+    name = var.instance_profile_name
   }
 
   monitoring {
