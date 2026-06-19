@@ -61,13 +61,13 @@ module "rds" {
 module "autoscaling" {
   source                              = "../modules/autoscaling"
   environment_name                    = var.environment_name
-  fitness_app_launch_template_id      = module.ec2_template.fitness_app_launch_template_id
+  launch_template                     = module.ec2_template.launch_template
   private_subnet_1_id                 = module.vpc.private_subnet_1_id
   private_subnet_2_id                 = module.vpc.private_subnet_2_id
-  ec2_sg                               = module.sg.ec2_sg
   min_size                            = var.min_size
   max_size                            = var.max_size
   desired_capacity                    = var.desired_capacity
+  target_group_arn                    = module.alb.target_group_arn
 }
 
 
