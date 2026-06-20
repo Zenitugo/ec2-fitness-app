@@ -33,7 +33,7 @@ resource "aws_security_group" "backend_sg" {
         from_port        = 8000
         to_port          = 8000
         protocol         = "tcp"
-        security_groups  = [aws_security_group.frontend_sg.id]
+        security_groups  = [aws_security_group.alb_sg.id]
     }
 
     egress {
