@@ -11,10 +11,7 @@ variable "role_name" {}
 variable "custom_policy_name" {}
 variable "bucket_prefix" {}
 variable "cloudfront_oac_name" {}
-variable "frontend_bucket_arn" {}
-variable "frontend_bucket_name" {}
 variable "db_username" {}
-variable "db_password" {}
 variable "project_name" {}
 variable "cpu_high_threshold" {}
 variable "cpu_low_threshold" {}
