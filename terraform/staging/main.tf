@@ -42,11 +42,11 @@ module "s3" {
   bucket_prefix                       = var.bucket_prefix
 }
 
-module "cloudfront" {
-  source                              = "../modules/cloudfront"
-  cloudfront_oac_name                 = var.cloudfront_oac_name
-  bucket_regional_domain_name         = module.s3.bucket_regional_domain_name
-}
+# module "cloudfront" {
+#   source                              = "../modules/cloudfront"
+#   cloudfront_oac_name                 = var.cloudfront_oac_name
+#   bucket_regional_domain_name         = module.s3.bucket_regional_domain_name
+# }
 
 module "rds" {
   source                              = "../modules/rds"
