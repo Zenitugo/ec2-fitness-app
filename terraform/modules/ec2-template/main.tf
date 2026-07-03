@@ -22,5 +22,5 @@ resource "aws_launch_template" "fitness_app_launch_template" {
     instance_metadata_tags = "disabled"
   }
 
-  user_data = file("${path.module}/template.sh")
+  user_data = filebase64("${path.module}/template.sh")
 }
