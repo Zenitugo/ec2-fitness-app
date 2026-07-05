@@ -41,20 +41,18 @@ dpkg -i amazon-cloudwatch-agent.deb
 systemctl start amazon-cloudwatch-agent
 systemctl enable amazon-cloudwatch-agent
 
-# Create docker-compose.yml
-cat > /home/ubuntu/docker-compose.yml << EOF
-version: '3.8'
-services:
-  backend:
-    image: ${ecr_registry}/fitness-backend:latest
-    ports:
-      - "8000:8000"
-    environment:
-      - DB_HOST=${db_host}
-      - DB_SECRET_ARN=${db_secret_arn}
-      - S3_BUCKET_NAME=${s3_bucket}
-      - AWS_REGION=${aws_region}
-    restart: always
-EOF
-
 chown ubuntu:ubuntu /home/ubuntu/docker-compose.yml
+
+
+# Install Nginx on EC2
+sudo apt-get install -y nginx
+
+# Copy Nginx config file to the correct location
+cp ./terraform/modules/ec2-template/nginx.conf /etc/nginx/sites-available/default
+
+# Remove default symlink and create new one
+ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+
+sudo systemctl restart nginx
+sudo systemctl enable nginx
