@@ -1,0 +1,178 @@
+
+name: Deploy FitTrack App
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - './fitness/backend/**'
+      - './fitness/frontend/**'
+      - './github/workflows/deploy.yml'
+
+ # ============================================================
+  # JOB 1: CREATE INFRASTRUCTURE
+  # ============================================================
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "eu-central-1"
+      
+      # Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Mask AWS Account ID
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
+
+      # Create infrastructure
+      - name: Creating infrastructure with Terraform
+        run: |
+          echo "Creating infrastructure with Terraform..."
+          cd terraform/staging
+          terraform init
+          terraform plan -var-file="values.tfvars"
+          terraform apply -auto-approve -var-file="values.tfvars"
+
+      # Retrieve ECR repository URIs from Terraform output
+      - name: Retrieve ECR repository URI
+        id: ecr-uris
+        run: |
+          cd terraform/staging
+          echo "ECR_BACKEND_URI=$(terraform output -raw backend_repository_url)" >> $GITHUB_ENV
+
+  # ============================================================
+  # JOB 2 — BuUILD AND PUSH PYTHON BACKEND
+  # ============================================================
+  deploy-backend-to-ec2:
+    name: Deploy backend to ec2
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Mask AWS Account ID
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
+      # Login to AWS ECR
+      - name: Login to AWS ECR
+        run: |
+          aws ecr get-login-password --region eu-central-1 | \
+          docker login --username AWS --password-stdin \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com
+
+
+     # Build and Push Python Backend
+      - name: Build and push backend
+        run: |
+          docker build -t fiitrack-backend ./fitness/backend
+          docker tag fittrack-backend:latest $ECR_BACKEND_URI:latest
+          docker push $ECR_BACKEND_URI:latest
+
+
+  # ============================================================
+  # JOB 3 — UPLOAD FRONTEND BUILD ARTIFACTS TO S3 BUCKET 
+  # ============================================================
+  deploy-frontend-build-artifcats-to-s3:
+    name: Deploy frontend build artifacts to s3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Mask AWS Account ID
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
+
+      - name: Set up Node.js
+        uses: actions/checkout@v6
+        with:
+          node-version: 24,
+          cache: 'npm'
+          cache-dependency-path: ./fitness/frontend/package-lock.json
+
+      - name: Install dependencies and build frontend
+        run: |
+          cd fitness/frontend
+          npm ci
+          npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      # Retrieve S3 bucket url from Terraform output
+      - name: Retrieve ECR repository URI
+        run: |
+          cd terraform/staging
+          echo "BUCKET_URL=$(terraform output -raw frontend_bucket_name)"
+
+
+      - name: Mask S3 BUCKET URL
+        run: |
+          echo "::add-mask::$BUCKET_URL
+          echo "S3_FRONTEND_BUCKET_URL=$BUCKET_URL" >> $GITHUB_ENV
+
+      
+
+      - name: Sync build to S3 bucket
+        run: |
+          aws s3 sync fitness/frontend/dist/s3://$s3_FRONTEND_BUCKET_URL --delete
+
+
+
+  # ============================================================
+  # JOB 3 — DEPLOY FRONTEND BUILD ARTIFACTS TO EC2
+  # ============================================================  
+  deploy-frontend-build-artifcats-from-s3-to-ec2:
+    name: Deploy frontend build artifacts to ec2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Mask AWS Account ID
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
+      - name: Deploy frontend from S3 to all EC2 instances via SSM
+        run: |
+          aws ssm send-command \
+            --targets "Key=tag:Environment,Values=staging" \
+            --document-name "AWS-RunShellScript" \
+            --parameters commands=[
+              "aws s3 sync s3://$S3_FRONTEND_BUCKET_URL/ /var/www/html/ --delete",
+              "sudo systemctl restart nginx"
+            ] \
+            --comment "Deploy frontend build from S3 to EC2" \
+            --region eu-central-1
+
+
+     
