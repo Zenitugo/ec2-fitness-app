@@ -16,7 +16,7 @@ resource "aws_s3_bucket_public_access_block" "media_bucket_privacy" {
 
 
 
-########################## Crreate S3 Bucket for Frontend Hosting (Public) ##########################
+########################## Create S3 Bucket for Frontend Hosting (Public) ##########################
 # Frontend Bucket
 resource "aws_s3_bucket" "frontend_bucket" {
   bucket_prefix = "${var.bucket_prefix}-frontend"
