@@ -59,6 +59,7 @@ jobs:
   # ============================================================
   deploy-backend-to-ec2:
     name: Deploy backend to ec2
+    needs: deploy
     runs-on: ubuntu-latest
     steps:
       # Checkout the repository
@@ -94,8 +95,9 @@ jobs:
   # ============================================================
   # JOB 3 — UPLOAD FRONTEND BUILD ARTIFACTS TO S3 BUCKET 
   # ============================================================
-  deploy-frontend-build-artifcats-to-s3:
+  deploy-frontend-build-artifacts-to-s3:
     name: Deploy frontend build artifacts to s3
+    needs: deploy-backend-to-ec2
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
@@ -112,7 +114,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/checkout@v6
         with:
-          node-version: 24,
+          node-version: 24
           cache: 'npm'
           cache-dependency-path: ./fitness/frontend/package-lock.json
 
@@ -149,6 +151,7 @@ jobs:
   # ============================================================  
   deploy-frontend-build-artifcats-from-s3-to-ec2:
     name: Deploy frontend build artifacts to ec2
+    needs: deploy-frontend-build-artifacts-to-s3
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
