@@ -35,8 +35,8 @@ data "aws_iam_policy_document" "ec2_permissions" {
       "s3:ListBucket"
     ]
     resources = [
-      "var.bucket_arn", # Bucket ARN from S3 module output
-      "var.bucket_arn/*"
+      var.bucket_arn, # Bucket ARN from S3 module output
+      "${var.bucket_arn}/*"
     ]
   }
 
