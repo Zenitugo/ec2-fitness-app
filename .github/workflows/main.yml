@@ -1,4 +1,3 @@
-
 name: Deploy FitTrack App
 
 on:
@@ -8,7 +7,7 @@ on:
     paths:
       - './fitness/backend/**'
       - './fitness/frontend/**'
-      - './github/workflows/deploy.yml'
+      - './github/workflows/main.yml'
 
  # ============================================================
   # JOB 1: CREATE INFRASTRUCTURE
