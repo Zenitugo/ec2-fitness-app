@@ -7,7 +7,7 @@ on:
     paths:
       - './fitness/backend/**'
       - './fitness/frontend/**'
-      - './github/workflows/main.yml'
+      - './.github/workflows/main.yml'
 
  # ============================================================
   # JOB 1: CREATE INFRASTRUCTURE
