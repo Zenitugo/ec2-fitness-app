@@ -83,7 +83,7 @@ jobs:
      # Build and Push Python Backend
       - name: Build and push backend
         run: |
-          docker build -t fiitrack-backend ./fitness/backend
+          docker build -t fittrack-backend fitness/backend
           docker tag fittrack-backend:latest $ECR_BACKEND_URI:latest
           docker push $ECR_BACKEND_URI:latest
 
