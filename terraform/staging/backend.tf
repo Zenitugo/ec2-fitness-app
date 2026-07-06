@@ -5,6 +5,6 @@ terraform {
         dynamodb_table = "ugochi-fitness-app-lock"
         region = "eu-central-1"
         encrypt = true
-        use_lockfile = true
+        use_lockfile = false
     }
 }
