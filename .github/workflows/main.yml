@@ -5,9 +5,9 @@ on:
     branches:
       - master
     paths:
-      - './fitness/backend/**'
-      - './fitness/frontend/**'
-      - './.github/workflows/main.yml'
+      - 'fitness/backend/**'
+      - 'fitness/frontend/**'
+      - '.github/workflows/main.yml'
 
  # ============================================================
   # JOB 1: CREATE INFRASTRUCTURE
