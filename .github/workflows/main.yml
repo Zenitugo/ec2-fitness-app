@@ -67,7 +67,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: "eu-central-1"
 
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
@@ -101,7 +101,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: "eu-central-1"
 
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
@@ -114,13 +114,21 @@ jobs:
           cache: 'npm'
           cache-dependency-path: ./fitness/frontend/package-lock.json
 
+      
+      - name: Get ALB DNS Name from Terraform output
+        run: |
+          terraform/staging
+          ALB_DNS=$(terraform output -raw alb_dns_name)
+          echo "VITE_API_URL=http://$ALB_DNS" >> $GITHUB_ENV
+              
+
       - name: Install dependencies and build frontend
         run: |
           cd fitness/frontend
           npm ci
           npm run build
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_API_URL: ${{ env.VITE_API_URL }}
 
       # Retrieve S3 bucket url from Terraform output
       - name: Retrieve ECR repository URI
@@ -155,7 +163,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: "eu-central-1"
 
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
