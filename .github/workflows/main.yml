@@ -41,14 +41,15 @@ jobs:
           cd terraform/staging
           terraform init
           terraform plan -var-file="values.tfvars"
-          terraform apply -auto-approve -var-file="values.tfvars"
+          terraform destroy -auto-approve -var-file="values.tfvars"
+        #terraform apply -auto-approve -var-file="values.tfvars"
 
       # Retrieve ECR repository URIs from Terraform output
       - name: Retrieve ECR repository URI
         id: ecr-uris
         run: |
           cd terraform/staging
-          echo "ECR_BACKEND_URI=$(terraform output -raw backend_repository_url)" >> $GITHUB_ENV
+          echo "backend_uri=$(terraform output -raw backend_repository_url)" >> $GITHUB_ENV
 
   # ============================================================
   # JOB 2 — BuUILD AND PUSH PYTHON BACKEND
