@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      - 'fitness/backend/**'
-      - 'fitness/frontend/**'
-      - '.github/workflows/main.yml'
 
  # ============================================================
   # JOB 1: CREATE INFRASTRUCTURE
