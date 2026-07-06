@@ -54,11 +54,11 @@ resource "aws_s3_bucket_policy" "allow_cloudfront_oac" {
         }
         Action   = "s3:GetObject"
         Resource = "${var.frontend_bucket_arn}/*"
-        Condition = {
-          StringEquals = {
-            "AWS:SourceArn" = "${var.cloudfront_distribution_arn}"
-          }
-        }
+        # Condition = {
+        #   StringEquals = {
+        #     "AWS:SourceArn" = "${var.cloudfront_distribution_arn}"
+        #   }
+        # }
       }
     ]
   })
