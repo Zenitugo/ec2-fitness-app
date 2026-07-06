@@ -33,4 +33,5 @@ jobs:
       - name: Delete Infrastructure
         run: |
             cd terraform/staging
+            terraform init
             terraform destroy -auto-approve -var-file='values.tfvars'          
