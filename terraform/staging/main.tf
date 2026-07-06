@@ -34,8 +34,9 @@ module "iam" {
   bucket_arn                          = module.s3.bucket_arn
   frontend_bucket_arn                 = module.s3.frontend_bucket_arn
   frontend_bucket_name                = module.s3.frontend_bucket_name
-  cloudfront_distribution_arn         = module.cloudfront.cloudfront_distribution_arn
+  #cloudfront_distribution_arn        = module.cloudfront.cloudfront_distribution_arn
 }
+
 
 module "s3" {
   source                              = "../modules/s3"
