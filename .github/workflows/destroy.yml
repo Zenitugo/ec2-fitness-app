@@ -26,11 +26,11 @@ jobs:
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
       # deploy.yml and destroy.yml - add as first step in every job
 
-      
+
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
       - name: Delete Infrastructure
         run: |
             cd terraform/staging
-            terrform destroy -auto-approve -var-file='values.tfvars'          
+            terraform destroy -auto-approve -var-file='values.tfvars'          
