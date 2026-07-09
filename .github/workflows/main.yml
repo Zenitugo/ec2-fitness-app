@@ -12,6 +12,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    outputs: 
+      backend_uri: ${{ steps.ecr-uris.outputs.backend_uri }} 
     steps:
 
       # Checkout the repository
@@ -48,7 +50,7 @@ jobs:
         id: ecr-uris
         run: |
           cd terraform/staging
-          echo "backend_uri=$(terraform output -raw backend_repository_url)" >> $GITHUB_ENV
+          echo "backend_uri=$(terraform output -raw backend_repository_url)" >> $GITHUB_OUTPUT
 
   # ============================================================
   # JOB 2 — BuUILD AND PUSH PYTHON BACKEND
@@ -57,6 +59,8 @@ jobs:
     name: Deploy backend to ec2
     needs: deploy
     runs-on: ubuntu-latest
+    env:
+      ECR_BACKEND_URI: ${{ needs.deploy.outputs.backend_uri }}
     steps:
       # Checkout the repository
       - name: Checkout code
