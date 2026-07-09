@@ -13,7 +13,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     outputs: 
-      backend_uri: ${{ steps.ecr-uris.outputs.backend_uri }} 
+      ecr_uri: ${{ steps.ecr-uris.outputs.ecr_uri }} 
     steps:
 
       # Checkout the repository
