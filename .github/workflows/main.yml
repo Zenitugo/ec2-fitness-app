@@ -46,7 +46,7 @@ jobs:
           terraform plan -var-file="values.tfvars"
           terraform apply -auto-approve -var-file="values.tfvars"
 
-      # Retrieve ECR repository URIs from Terraform output
+      # Retrieve the ECR repository URIs from Terraform output
       - name: Retrieve ECR repository URI
         id: ecr-uris
         run: |
