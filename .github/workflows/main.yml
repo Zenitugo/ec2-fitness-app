@@ -50,6 +50,7 @@ jobs:
         id: ecr-uris
         run: |
           cd terraform/staging
+          terraform output
           echo "backend_uri=$(terraform output -raw backend_repository_url)" >> $GITHUB_OUTPUT
 
   # ============================================================
