@@ -53,6 +53,10 @@ jobs:
           terraform output
           echo "backend_uri=$(terraform output -raw backend_repository_url)" >> $GITHUB_OUTPUT
 
+      - name: Debug step output
+        run: |
+          echo "Step output = '${{ steps.ecr-uris.outputs.backend_uri }}'"
+
   # ============================================================
   # JOB 2 — BuUILD AND PUSH PYTHON BACKEND
   # ============================================================
@@ -83,6 +87,11 @@ jobs:
           aws ecr get-login-password --region eu-central-1 | \
           docker login --username AWS --password-stdin \
           ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com
+
+      - name: Debug ECR URI
+        run: |
+          echo "needs.deploy.outputs.backend_uri = '${{ needs.deploy.outputs.backend_uri }}'"
+          echo "ECR_BACKEND_URI = '$ECR_BACKEND_URI'"
 
 
      # Build and Push Python Backend
