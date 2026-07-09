@@ -52,7 +52,7 @@ jobs:
         run: |
           cd terraform/staging
           backend_uri=$(terraform output -raw backend_repository_url)
-          echo "backend_uri=$backend_uri" >> "$GITHUB_OUTPUT"
+          echo "$backend_uri" >> $GITHUB_OUTPUT
           cat "$GITHUB_OUTPUT"
   # ===========================================================
   # JOB 2 — BuUILD AND PUSH PYTHON BACKEND
