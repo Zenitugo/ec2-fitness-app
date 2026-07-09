@@ -41,8 +41,7 @@ jobs:
           cd terraform/staging
           terraform init
           terraform plan -var-file="values.tfvars"
-          terraform destroy -auto-approve -var-file="values.tfvars"
-        #terraform apply -auto-approve -var-file="values.tfvars"
+          terraform apply -auto-approve -var-file="values.tfvars
 
       # Retrieve ECR repository URIs from Terraform output
       - name: Retrieve ECR repository URI
