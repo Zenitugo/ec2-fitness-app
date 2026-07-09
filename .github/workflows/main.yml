@@ -6,7 +6,7 @@ on:
       - master
 
  # ============================================================
-  # JOB 1: CREATE INFRASTRUCTURE
+  # JOB 1: CREATE INFRASTRUCTURE FOR THE PROJECT
   # ============================================================
 
 jobs:
