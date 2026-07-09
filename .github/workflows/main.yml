@@ -31,8 +31,7 @@ jobs:
       # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_wrapper: false
+      
 
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
@@ -52,13 +51,11 @@ jobs:
         id: ecr-uris
         run: |
           cd terraform/staging
-          terraform output
-          echo "backend_uri=$(terraform output -raw backend_repository_url)" >> $GITHUB_OUTPUT
- 
-      - name: Print GITHUB_OUTPUT
-        run: |
+          ecr_uri=$(terraform output -raw backend_repository_url)
+          echo "ecr_uri is: $ecr_uri"
+          echo "backend_uri=$ecr_uri" >> $GITHUB_OUTPUT
           cat "$GITHUB_OUTPUT"
-  # ============================================================
+  # ===========================================================
   # JOB 2 — BuUILD AND PUSH PYTHON BACKEND
   # ============================================================
   deploy-backend-to-ec2:
