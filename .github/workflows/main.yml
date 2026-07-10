@@ -44,7 +44,7 @@ jobs:
           terraform plan -var-file="values.tfvars"
           terraform apply -auto-approve -var-file="values.tfvars"
 
-      # Retrieve the ECR repository URIs from Terraform output
+      # Retrieve the ECR repository name  from Terraform output
       - name: Retrieve ECR repository URI
         id: ecr-uris
         run: |
@@ -110,7 +110,7 @@ jobs:
   # ============================================================
   deploy-frontend-build-artifacts-to-s3:
     name: Deploy frontend build artifacts to s3
-    needs: deploy-backend-to-ec2
+    needs: [deploy-backend-to-ec2]
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
@@ -125,7 +125,7 @@ jobs:
 
 
       - name: Set up Node.js
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           node-version: 24
           cache: 'npm'
@@ -134,7 +134,7 @@ jobs:
       
       - name: Get ALB DNS Name from Terraform output
         run: |
-          terraform/staging
+          cd terraform/staging
           ALB_DNS=$(terraform output -raw alb_dns_name)
           echo "VITE_API_URL=http://$ALB_DNS" >> $GITHUB_ENV
               
@@ -156,7 +156,7 @@ jobs:
 
       - name: Mask S3 BUCKET URL
         run: |
-          echo "::add-mask::$BUCKET_URL
+          echo "::add-mask::$BUCKET_URL"
           echo "S3_FRONTEND_BUCKET_URL=$BUCKET_URL" >> $GITHUB_ENV
 
       
@@ -168,7 +168,7 @@ jobs:
 
 
   # ============================================================
-  # JOB 3 — DEPLOY FRONTEND BUILD ARTIFACTS TO EC2
+  # JOB 4 — DEPLOY FRONTEND BUILD ARTIFACTS TO EC2
   # ============================================================  
   deploy-frontend-build-artifcats-from-s3-to-ec2:
     name: Deploy frontend build artifacts to ec2
