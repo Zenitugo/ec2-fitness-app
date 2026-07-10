@@ -190,7 +190,9 @@ jobs:
   # ============================================================  
   deploy-frontend-build-artifcats-from-s3-to-ec2:
     name: Deploy frontend build artifacts to ec2
-    needs: deploy-frontend-build-artifacts-to-s3
+    needs: 
+      - deploy-frontend-build-artifacts-to-s3
+      - deploy
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
@@ -208,12 +210,10 @@ jobs:
           aws ssm send-command \
             --targets "Key=tag:Environment,Values=staging" \
             --document-name "AWS-RunShellScript" \
-            --parameters commands=[
-              "aws s3 sync s3://$S3_FRONTEND_BUCKET_URL/ /var/www/html/ --delete",
+            --parameters 'commands=[
+              "aws s3 sync s3://${{ needs.deploy.outputs.frontend_bucket_name }}/ /var/www/html/ --delete",
               "sudo systemctl restart nginx"
-            ] \
+            ]' \
             --comment "Deploy frontend build from S3 to EC2" \
             --region eu-central-1
-
-
-     
+          
