@@ -54,6 +54,7 @@ jobs:
           BACKEND_URI=$(terraform output -raw backend_repository_url)
           echo "backend_uri=${BACKEND_URI}" >> $GITHUB_OUTPUT
           echo "✅ Backend URI: ${BACKEND_URI}"
+           echo "Contents of GITHUB_OUTPUT:" cat "$GITHUB_OUTPUT"
    
   # ===========================================================
   # JOB 2 — BUILD AND PUSH PYTHON BACKEND
