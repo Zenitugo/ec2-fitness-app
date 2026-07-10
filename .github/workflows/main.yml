@@ -33,10 +33,6 @@ jobs:
         uses: hashicorp/setup-terraform@v3
       
 
-      - name: Mask AWS Account ID
-        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
-
-
       # Create infrastructure
       - name: Creating infrastructure with Terraform
         run: |
@@ -57,9 +53,14 @@ jobs:
            echo "Contents of GITHUB_OUTPUT:" 
            cat "$GITHUB_OUTPUT"
 
+      - name: Mask AWS Account ID
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
+
       - name: Verify step output
         run: |
           echo "Step output = '${{ steps.ecr-uris.outputs.backend_uri }}'"
+
         
   # ===========================================================
   # JOB 2 — BUILD AND PUSH PYTHON BACKEND
@@ -82,6 +83,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: "eu-central-1"
 
+      - name: Mask AWS Account ID
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
       # Login to AWS ECR
       - name: Login to AWS ECR
         run: |
@@ -96,13 +100,16 @@ jobs:
      # Build and Push Python Backend
       - name: Build and push backend
         run: |
+
+          if [ -z "$ECR_BACKEND_URI" ]; then
+            echo "❌ Error: ECR_BACKEND_URI is empty"
+            exit 1
+          fi
           docker build -t fittrack-backend fitness/backend
           docker tag fittrack-backend:latest $ECR_BACKEND_URI:latest
           docker push $ECR_BACKEND_URI:latest
           echo "✅ Successfully pushed: $ECR_BACKEND_URI:latest"
 
-      - name: Mask AWS Account ID
-        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
   # ============================================================
   # JOB 3 — UPLOAD FRONTEND BUILD ARTIFACTS TO S3 BUCKET 
