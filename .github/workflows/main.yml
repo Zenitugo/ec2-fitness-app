@@ -56,7 +56,11 @@ jobs:
           echo "✅ Backend URI: ${BACKEND_URI}"
            echo "Contents of GITHUB_OUTPUT:" 
            cat "$GITHUB_OUTPUT"
-   
+
+      - name: Verify step output
+        run: |
+          echo "Step output = '${{ steps.ecr-uris.outputs.backend_uri }}'"
+        
   # ===========================================================
   # JOB 2 — BUILD AND PUSH PYTHON BACKEND
   # ============================================================
