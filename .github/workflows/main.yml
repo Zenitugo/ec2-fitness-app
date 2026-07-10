@@ -48,7 +48,7 @@ jobs:
         run: |
           cd terraform/staging
           BACKEND_URI=$(terraform output -raw backend_repository_url)
-          echo "backend_uri=${BACKEND_URI}" >> $env:GITHUB_OUTPUT
+          echo "backend_uri=$BACKEND_URI" >> $env:GITHUB_OUTPUT
           echo "✅ Backend URI: ${BACKEND_URI}"
            echo "Contents of GITHUB_OUTPUT:" 
            cat "$GITHUB_OUTPUT"
@@ -99,11 +99,6 @@ jobs:
      # Build and Push Python Backend
       - name: Build and push backend
         run: |
-
-          if [ -z "$ECR_BACKEND_URI" ]; then
-            echo "❌ Error: ECR_BACKEND_URI is empty"
-            exit 1
-          fi
           docker build -t fittrack-backend fitness/backend
           docker tag fittrack-backend:latest $ECR_BACKEND_URI:latest
           docker push $ECR_BACKEND_URI:latest
