@@ -147,23 +147,23 @@ jobs:
         env:
           VITE_API_URL: ${{ env.VITE_API_URL }}
 
-      # Retrieve S3 bucket url from Terraform output
-      - name: Retrieve ECR repository URI
+      # Retrieve S3 bucket name from Terraform output
+      - name: Retrieve S3 bucket
         run: |
           cd terraform/staging
-          echo "BUCKET_URL=$(terraform output -raw frontend_bucket_name)"
+          echo "BUCKET_NAME=$(terraform output -raw frontend_bucket_name)"
 
 
-      - name: Mask S3 BUCKET URL
+      - name: Mask S3 BUCKET NAME
         run: |
           echo "::add-mask::$BUCKET_URL"
-          echo "S3_FRONTEND_BUCKET_URL=$BUCKET_URL" >> $GITHUB_ENV
+          echo "S3_FRONTEND_BUCKET_URL=$BUCKET_NAME" >> $GITHUB_ENV
 
       
 
       - name: Sync build to S3 bucket
         run: |
-          aws s3 sync fitness/frontend/dist/s3://$s3_FRONTEND_BUCKET_URL --delete
+          aws s3 sync fitness/frontend/dist/s3://$S3_FRONTEND_BUCKET_URL --delete
 
 
 
