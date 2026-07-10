@@ -13,7 +13,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     outputs: 
-      backend_uri: ${{ steps.ecr-uris.outputs.backend_uri }} 
+      backend_uri: ${{ steps.ecr-uris.outputs.backend_repo_name }} 
     steps:
 
       # Checkout the repository
@@ -32,6 +32,8 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
       
+      - name: Mask AWS Account ID
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
       # Create infrastructure
       - name: Creating infrastructure with Terraform
@@ -48,17 +50,15 @@ jobs:
         run: |
           cd terraform/staging
           BACKEND_URI=$(terraform output -raw backend_repository_url)
-          echo "backend_uri=$BACKEND_URI" >> $env:GITHUB_OUTPUT
-          echo "✅ Backend URI: ${BACKEND_URI}"
-           echo "Contents of GITHUB_OUTPUT:" 
-           cat "$GITHUB_OUTPUT"
+          REPO_NAME=$(basename "$BACKEND_URI")
+          echo "Repository Name: $REPO_NAME"
+          echo "backend_repo_name=$REPO_NAME" >> "$GITHUB_OUTPUT"
+        # echo "backend_uri=$BACKEND_URI" >> $GITHUB_OUTPUT
+    
 
-      # - name: Mask AWS Account ID
-      #   run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
-
-      # - name: Verify step output
-      #   run: |
-      #     echo "Step output = '${{ steps.ecr-uris.outputs.backend_uri }}'"
+      - name: Verify step output
+        run: |
+          echo "Step output = '${{ steps.ecr-uris.outputs.backend_repo_name }}'"
 
         
   # ===========================================================
@@ -69,7 +69,7 @@ jobs:
     needs: [deploy]
     runs-on: ubuntu-latest
     env:
-      ECR_BACKEND_URI: ${{ needs.deploy.outputs.backend_uri }}
+      ECR_BACKEND_URI: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com/${{ needs.deploy.outputs.backend_repo_name }}
     steps:
       # Checkout the repository
       - name: Checkout code
@@ -94,7 +94,7 @@ jobs:
           
       - name: Verify job output
         run: |
-          echo "Job output = '${{ needs.deploy.outputs.backend_uri }}'"
+          echo "Job output = '${{ needs.deploy.outputs.backend_repo_name }}'"
           
      # Build and Push Python Backend
       - name: Build and push backend
