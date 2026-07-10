@@ -82,9 +82,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: "eu-central-1"
 
-      - name: Mask AWS Account ID
-        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
-
       # Login to AWS ECR
       - name: Login to AWS ECR
         run: |
@@ -104,6 +101,8 @@ jobs:
           docker push $ECR_BACKEND_URI:latest
           echo "✅ Successfully pushed: $ECR_BACKEND_URI:latest"
 
+      - name: Mask AWS Account ID
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
   # ============================================================
   # JOB 3 — UPLOAD FRONTEND BUILD ARTIFACTS TO S3 BUCKET 
