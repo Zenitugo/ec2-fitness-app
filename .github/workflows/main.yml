@@ -87,7 +87,11 @@ jobs:
           aws ecr get-login-password --region eu-central-1 | \
           docker login --username AWS --password-stdin \
           ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com
-
+          
+      - name: Verify job output
+        run: |
+          echo "Job output = '${{ needs.deploy.outputs.backend_uri }}'"
+          
      # Build and Push Python Backend
       - name: Build and push backend
         run: |
