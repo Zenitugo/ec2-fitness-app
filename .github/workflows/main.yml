@@ -48,18 +48,17 @@ jobs:
         run: |
           cd terraform/staging
           BACKEND_URI=$(terraform output -raw backend_repository_url)
-          echo "backend_uri=${BACKEND_URI}" >> $GITHUB_OUTPUT
+          echo "backend_uri=${BACKEND_URI}" >> $env:GITHUB_OUTPUT
           echo "✅ Backend URI: ${BACKEND_URI}"
            echo "Contents of GITHUB_OUTPUT:" 
            cat "$GITHUB_OUTPUT"
 
-      - name: Mask AWS Account ID
-        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+      # - name: Mask AWS Account ID
+      #   run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
-
-      - name: Verify step output
-        run: |
-          echo "Step output = '${{ steps.ecr-uris.outputs.backend_uri }}'"
+      # - name: Verify step output
+      #   run: |
+      #     echo "Step output = '${{ steps.ecr-uris.outputs.backend_uri }}'"
 
         
   # ===========================================================
