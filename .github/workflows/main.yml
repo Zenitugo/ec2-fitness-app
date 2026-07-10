@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs: 
       backend_repo_name: ${{ steps.ecr-uris.outputs.backend_repo_name }} 
+      alb_dns_name: ${{ steps.terraform-outputs.outputs.alb_dns_name }}
+      frontend_bucket_name: ${{ steps.frontend-bucket.outputs.frontend_bucket_name }}
+      
     steps:
 
       # Checkout the repository
@@ -54,7 +57,29 @@ jobs:
           echo "Repository Name: $REPO_NAME"
           echo "backend_repo_name=$REPO_NAME" >> "$GITHUB_OUTPUT"
         # echo "backend_uri=$BACKEND_URI" >> $GITHUB_OUTPUT
-    
+
+      - name: Retrieve Terraform Outputs
+        id: terraform-outputs
+        run: |
+          cd terraform/staging
+
+          ALB_DNS=$(terraform output -raw alb_dns_name)
+
+          echo "alb_dns_name=$ALB_DNS" >> "$GITHUB_OUTPUT"
+
+          echo "ALB DNS: $ALB_DNS"
+
+      - name: Retrieve Frontend Bucket Name
+        id: frontend-bucket
+        run: |
+          cd terraform/staging
+
+          FRONTEND_BUCKET_NAME=$(terraform output -raw frontend_bucket_name)
+
+          echo "frontend_bucket_name=$FRONTEND_BUCKET_NAME" >> "$GITHUB_OUTPUT"
+
+          echo "Frontend Bucket Name: $FRONTEND_BUCKET_NAME"
+          
 
       - name: Verify step output
         run: |
@@ -110,8 +135,10 @@ jobs:
   # ============================================================
   deploy-frontend-build-artifacts-to-s3:
     name: Deploy frontend build artifacts to s3
-    needs: [deploy-backend-to-ec2]
+    needs: [deploy]
     runs-on: ubuntu-latest
+    env:
+      ALB_DNS_NAME: ${{ needs.deploy.outputs.alb_dns_name }}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -134,13 +161,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: ./fitness/frontend/package-lock.json
 
-      
-      - name: Get ALB DNS Name from Terraform output
+
+      - name: Set API URL
         run: |
-          cd terraform/staging
-          ALB_DNS=$(terraform output -raw alb_dns_name)
-          echo "VITE_API_URL=http://$ALB_DNS" >> $GITHUB_ENV
-              
+          echo "VITE_API_URL=http://$ALB_DNS_NAME" >> "$GITHUB_ENV"
+                    
 
       - name: Install dependencies and build frontend
         run: |
@@ -150,23 +175,13 @@ jobs:
         env:
           VITE_API_URL: ${{ env.VITE_API_URL }}
 
-      # Retrieve S3 bucket name from Terraform output
-      - name: Retrieve S3 bucket
+      - name: Set frontend bucket name
         run: |
-          cd terraform/staging
-          echo "BUCKET_NAME=$(terraform output -raw frontend_bucket_name)"
-
-
-      - name: Mask S3 BUCKET NAME
-        run: |
-          echo "::add-mask::$BUCKET_URL"
-          echo "S3_FRONTEND_BUCKET_URL=$BUCKET_NAME" >> $GITHUB_ENV
-
-      
-
+          echo "S3_FRONTEND_BUCKET_NAME=${{ needs.deploy.outputs.frontend_bucket_name }}" >> "$GITHUB_ENV"
+          
       - name: Sync build to S3 bucket
         run: |
-          aws s3 sync fitness/frontend/dist/s3://$S3_FRONTEND_BUCKET_URL --delete
+          aws s3 sync fitness/frontend/dist/s3://$S3_FRONTEND_BUCKET_NAME --delete
 
 
 
