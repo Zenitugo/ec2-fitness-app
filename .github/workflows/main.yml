@@ -123,6 +123,9 @@ jobs:
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
 
       - name: Set up Node.js
         uses: actions/checkout@v4
