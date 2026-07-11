@@ -47,8 +47,34 @@ chown ubuntu:ubuntu /home/ubuntu/docker-compose.yml
 # Install Nginx on EC2
 sudo apt-get install -y nginx
 
-# Copy Nginx config file to the correct location
-cp ./terraform/modules/ec2-template/nginx.conf /etc/nginx/sites-available/default
+
+# Create Nginx config directly (no file copy needed)
+cat > /etc/nginx/sites-available/default << 'NGINXCONF'
+server {
+    listen 80;
+
+    # Serve React frontend
+    location / {
+        root /var/www/html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy API calls to FastAPI
+    location /api/ {
+        proxy_pass http://localhost:8000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    location /health {
+        proxy_pass http://localhost:8000/health;
+    }
+}
+NGINXCONF
+
+# Create web root for React frontend
+mkdir -p /var/www/html
+chown -R ubuntu:ubuntu /var/www/html
 
 # Remove default symlink and create new one
 ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
