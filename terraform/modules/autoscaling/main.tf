@@ -12,6 +12,14 @@ resource "aws_autoscaling_group" "fitness_app_autoscaling_group" {
   vpc_zone_identifier       = [var.private_subnet_1_id, var.private_subnet_2_id]
 
   target_group_arns        = [var.target_group_arn] 
+
+
+  tag {
+    key         = Environment 
+    value       = var.environment_name
+    propagate_at_launch = true
+
+  }
 }
 
 
