@@ -15,7 +15,7 @@ resource "aws_autoscaling_group" "fitness_app_autoscaling_group" {
 
 
   tag {
-    key         = Environment 
+    key         = "Environment" 
     value       = var.environment_name
     propagate_at_launch = true
 
