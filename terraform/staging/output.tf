@@ -13,3 +13,15 @@ output "alb_dns_name" {
 output "frontend_bucket_name" {
   value = module.s3.frontend_bucket_name
 }
+
+
+##############   Export the RDS ENdpoint #########################
+output "db_endpoint" {
+  value = module.rds.db_endpoint
+}
+
+
+################ Export Secret ARN ###########################
+output "db_secret_arn" {
+  value = module.rds.db_secret_arn
+}
