@@ -16,6 +16,8 @@ jobs:
       backend_repo_name: ${{ steps.ecr-uris.outputs.backend_repo_name }} 
       alb_dns_name: ${{ steps.terraform-outputs.outputs.alb_dns_name }}
       frontend_bucket_name: ${{ steps.frontend-bucket.outputs.frontend_bucket_name }}
+      db_host: ${{ steps.db-hostname.outputs.db_host}}
+      db_secret: ${{ steps.secret-arns.outputs.db_secret}}
       
     steps:
 
@@ -79,6 +81,30 @@ jobs:
           echo "frontend_bucket_name=$FRONTEND_BUCKET_NAME" >> "$GITHUB_OUTPUT"
 
           echo "Frontend Bucket Name: $FRONTEND_BUCKET_NAME"
+          
+
+      - name: Retrieve DB host name
+        id: db-hostname
+        run: |
+          cd terraform/staging
+
+          DB_HOST=$(terraform output -raw db_endpoint)
+
+          echo "db_host=$DB_HOST" >> "$GITHUB_OUTPUT"
+
+          echo "DB Hostname: $DB_HOST"
+          
+
+      - name: Retrieve Secret ARN
+        id: secret-arns
+        run: |
+          cd terraform/staging
+
+          DB_SECRET_ARN=$(terraform output -raw db_secret_arn)
+
+          echo "db_secret_arn=$DB_SECRET_ARN" >> "$GITHUB_OUTPUT"
+
+          echo "db_secret_arn: $DB_SECRET_ARN"
           
 
       - name: Verify step output
@@ -188,10 +214,49 @@ jobs:
   # ============================================================
   # JOB 4 — DEPLOY FRONTEND BUILD ARTIFACTS TO EC2
   # ============================================================  
-  deploy-frontend-build-artifcats-from-s3-to-ec2:
+  deploy-frontend-build-artifacts-from-s3-to-ec2:
     name: Deploy frontend build artifacts to ec2
     needs: 
       - deploy-frontend-build-artifacts-to-s3
+      - deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "eu-central-1"
+
+      - name: Mask AWS Account ID
+        run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
+      - name: Deploy frontend from S3 to all EC2 instances via SSM
+        run: |
+          aws ssm send-command \
+            --targets "Key=tag:Environment,Values=staging" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "aws s3 sync s3://${{ needs.deploy.outputs.frontend_bucket_name }}/ /var/www/html/ --delete",
+              "sudo systemctl restart nginx"
+            ]' \
+            --comment "Deploy frontend build from S3 to EC2" \
+            --region eu-central-1
+
+  
+
+
+  # ============================================================
+  # JOB 5 —  PULL BACKEND IMAGE & START APPLICATION
+  # ============================================================  
+
+  pull-backend-image:
+    name: Pull backend image and start application
+    needs: 
+      - deploy-frontend-build-artifacts-from-s3-to-ec2
       - deploy
     runs-on: ubuntu-latest
     steps:
@@ -215,22 +280,12 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
               "aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com",
-              "cd /home/ubuntu && docker compose pull",
-              "docker compose up -d",
+              "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com/${{ needs.deploy.outputs.backend_repo_name }}:latest",
+              "docker stop fittrack-backend || true",
+              "docker rm fittrack-backend || true",
+              "docker run -d --name fittrack-backend --restart always -p 8000:8000 -e DB_HOST=${{ needs.deploy.outputs.db_host }} -e DB_SECRET_ARN=${{ needs.deploy.outputs.db_secrets }} -e S3_BUCKET_NAME=${{ needs.deploy.outputs.frontend_bucket_name }} -e AWS_REGION=eu-central-1 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com/${{ needs.deploy.outputs.backend_repo_name }}:latest",
               "docker image prune -f"
             ]' \
             --comment "Deploy backend from ECR to EC2" \
             --region eu-central-1
 
-      - name: Deploy frontend from S3 to all EC2 instances via SSM
-        run: |
-          aws ssm send-command \
-            --targets "Key=tag:Environment,Values=staging" \
-            --document-name "AWS-RunShellScript" \
-            --parameters 'commands=[
-              "aws s3 sync s3://${{ needs.deploy.outputs.frontend_bucket_name }}/ /var/www/html/ --delete",
-              "sudo systemctl restart nginx"
-            ]' \
-            --comment "Deploy frontend build from S3 to EC2" \
-            --region eu-central-1
-          
