@@ -140,6 +140,10 @@ jobs:
     env:
       ALB_DNS_NAME: ${{ needs.deploy.outputs.alb_dns_name }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -150,14 +154,10 @@ jobs:
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-
       - name: Set up Node.js
         uses: actions/checkout@v4
         with:
-          node-version: 24
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: ./fitness/frontend/package-lock.json
 
@@ -195,6 +195,9 @@ jobs:
       - deploy
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -204,6 +207,20 @@ jobs:
 
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
+      - name: Pull and restart backend container via SSM
+        run: |
+          aws ssm send-command \
+            --targets "Key=tag:Environment,Values=staging" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com",
+              "cd /home/ubuntu && docker compose pull",
+              "docker compose up -d",
+              "docker image prune -f"
+            ]' \
+            --comment "Deploy backend from ECR to EC2" \
+            --region eu-central-1
 
       - name: Deploy frontend from S3 to all EC2 instances via SSM
         run: |
