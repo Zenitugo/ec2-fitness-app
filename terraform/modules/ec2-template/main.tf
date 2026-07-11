@@ -24,7 +24,4 @@ resource "aws_launch_template" "fitness_app_launch_template" {
 
   user_data = filebase64("${path.module}/template.sh")
 
-  tags = {
-    Environment = "${var.environment_name}"
-  }
 }
