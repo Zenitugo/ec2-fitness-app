@@ -111,10 +111,6 @@ jobs:
         run: |
           echo "Step output = '${{ steps.ecr-uris.outputs.backend_repo_name }}'"
 
-      - name: Debug Secret ARN
-        run: |
-          echo "Secret ARN = '${{ needs.deploy.outputs.db_secret_arn }}'"
-
         
   # ===========================================================
   # JOB 2 — BUILD AND PUSH PYTHON BACKEND
@@ -276,6 +272,10 @@ jobs:
 
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+
+      - name: Debug deploy outputs
+        run: |
+          echo "Secret ARN: '${{ needs.deploy.outputs.db_secret_arn }}'"
 
       - name: Pull and restart backend container via SSM
         run: |
