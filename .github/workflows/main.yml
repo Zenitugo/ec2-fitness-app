@@ -16,7 +16,7 @@ jobs:
       backend_repo_name: ${{ steps.ecr-uris.outputs.backend_repo_name }} 
       alb_dns_name: ${{ steps.terraform-outputs.outputs.alb_dns_name }}
       frontend_bucket_name: ${{ steps.frontend-bucket.outputs.frontend_bucket_name }}
-      db_host: ${{ steps.db-hostname.outputs.db_host}}
+      db_host: ${{ steps.db-hostname.outputs.db_host }}
       db_secret_arn: ${{ steps.secret-arns.outputs.db_secret_arn }}
       
     steps:
@@ -291,7 +291,7 @@ jobs:
               "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com/${{ needs.deploy.outputs.backend_repo_name }}:latest",
               "docker stop fittrack-backend || true",
               "docker rm fittrack-backend || true",
-              "docker run -d --name fittrack-backend --restart always -p 8000:8000 -e DB_HOST=${{ needs.deploy.outputs.db_host }} -e DB_SECRET_ARN=${{ needs.deploy.outputs.db_secret_arn }} -e S3_BUCKET_NAME=${{ needs.deploy.outputs.frontend_bucket_name }} -e DB_PORT=5432 -e DB_NAME=fittrack -e AWS_REGION=eu-central-1 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com/${{ needs.deploy.outputs.backend_repo_name }}:latest",
+              "docker run -d --name fittrack-backend --restart always -p 8000:8000 -e DB_HOST=${{ needs.deploy.outputs.db_host }} -e DB_SECRET_ARN=$DB_SECRET_ARN -e S3_BUCKET_NAME=${{ needs.deploy.outputs.frontend_bucket_name }} -e DB_PORT=5432 -e DB_NAME=fittrack -e AWS_REGION=eu-central-1 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com/${{ needs.deploy.outputs.backend_repo_name }}:latest",
               "docker image prune -f"
             ]' \
             --comment "Deploy backend from ECR to EC2" \
