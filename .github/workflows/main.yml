@@ -283,7 +283,7 @@ jobs:
               "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com/${{ needs.deploy.outputs.backend_repo_name }}:latest",
               "docker stop fittrack-backend || true",
               "docker rm fittrack-backend || true",
-              "docker run -d --name fittrack-backend --restart always -p 8000:8000 -e DB_HOST=${{ needs.deploy.outputs.db_host }} -e DB_SECRET_ARN=${{ needs.deploy.outputs.db_secrets_arn }} -e S3_BUCKET_NAME=${{ needs.deploy.outputs.frontend_bucket_name }} -e AWS_REGION=eu-central-1 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com/${{ needs.deploy.outputs.backend_repo_name }}:latest",
+              "docker run -d --name fittrack-backend --restart always -p 8000:8000 -e DB_HOST=${{ needs.deploy.outputs.db_host }} -e DB_SECRET_ARN=${{ needs.deploy.outputs.db_secrets_arn }} -e S3_BUCKET_NAME=${{ needs.deploy.outputs.frontend_bucket_name }} -e DB_PORT=5432 -e DB_NAME=fittrack -e AWS_REGION=eu-central-1 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com/${{ needs.deploy.outputs.backend_repo_name }}:latest",
               "docker image prune -f"
             ]' \
             --comment "Deploy backend from ECR to EC2" \
