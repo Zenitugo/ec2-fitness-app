@@ -24,4 +24,12 @@ output "db_endpoint" {
 ################ Export Secret ARN ###########################
 output "db_secret_arn" {
   value = module.rds.db_secret_arn
+  sensitive = true
+}
+
+
+############### Export Media Bucket ######################
+
+output "media_bucket_id" {
+  value = module.s3.media_bucket_id
 }
