@@ -17,7 +17,7 @@ jobs:
       alb_dns_name: ${{ steps.terraform-outputs.outputs.alb_dns_name }}
       frontend_bucket_name: ${{ steps.frontend-bucket.outputs.frontend_bucket_name }}
       db_host: ${{ steps.db-hostname.outputs.db_host }}
-      db_secret_arn: ${{ steps.secret-arns.outputs.db_secret_arn }}
+      
       
     steps:
 
@@ -93,27 +93,12 @@ jobs:
           echo "db_host=$DB_HOST" >> "$GITHUB_OUTPUT"
 
           echo "DB Hostname: $DB_HOST"
-          
-
-      - name: Retrieve Secret ARN
-        id: secret-arns
-        run: |
-          cd terraform/staging
-
-          DB_SECRET_ARN=$(terraform output -raw db_secret_arn)
-
-          echo "db_secret_arn=$DB_SECRET_ARN" >> "$GITHUB_OUTPUT"
-
-          echo "db_secret_arn: $DB_SECRET_ARN"
-          
+                    
 
       - name: Verify step output
         run: |
           echo "Step output = '${{ steps.ecr-uris.outputs.backend_repo_name }}'"
 
-      - name: Verify Secret Step Output
-        run: |
-          echo "Step output = '${{ steps.secret-arns.outputs.db_secret_arn }}'"
 
         
   # ===========================================================
@@ -274,12 +259,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: "eu-central-1"
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
-      - name: Debug deploy outputs
+
+      - name: Get Secret ARN
         run: |
-          echo "Secret ARN: '${{ needs.deploy.outputs.db_secret_arn }}'"
+          cd terraform/staging
+          terraform init -input=false
+          echo "DB_SECRET_ARN=$(terraform output -raw db_secret_arn)" >> $GITHUB_ENV
+  
 
       - name: Pull and restart backend container via SSM
         run: |
