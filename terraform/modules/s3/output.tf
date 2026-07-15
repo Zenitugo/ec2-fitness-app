@@ -16,3 +16,8 @@ output "frontend_bucket_name" {
 output "frontend_bucket_arn" {
   value = aws_s3_bucket.frontend_bucket.arn
 }
+
+
+output "media_bucket_id" {
+  value = aws_s3_bucket.media_bucket.id
+}
