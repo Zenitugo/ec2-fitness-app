@@ -36,7 +36,10 @@ data "aws_iam_policy_document" "ec2_permissions" {
     ]
     resources = [
       var.bucket_arn, # Bucket ARN from S3 module output
-      "${var.bucket_arn}/*"
+      "${var.bucket_arn}/*",
+
+      var.frontend_bucket_arn,
+      "${var.frontend_bucket_arn}/*"
     ]
   }
 
