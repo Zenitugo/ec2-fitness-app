@@ -1,4 +1,15 @@
 #!/bin/bash
+
+
+# Fetch values from SSM Parameter Store at boot
+DB_HOST=$(aws ssm get-parameter --name "/fittrack/staging/db_host" --query "Parameter.Value" --output text --region eu-central-1)
+DB_SECRET_ARN=$(aws ssm get-parameter --name "/fittrack/staging/db_secret_arn" --query "Parameter.Value" --output text --region eu-central-1)
+S3_BUCKET=$(aws ssm get-parameter --name "/fittrack/staging/media_bucket" --query "Parameter.Value" --output text --region eu-central-1)
+ECR_REGISTRY=$(aws ssm get-parameter --name "/fittrack/staging/ecr_registry" --query "Parameter.Value" --output text --region eu-central-1)
+REPO_NAME=$(aws ssm get-parameter --name "/fittrack/staging/backend_repo_name" --query "Parameter.Value" --output text --region eu-central-1)
+
+
+
 # Update system
 apt-get update -y
 apt-get upgrade -y
@@ -82,3 +93,21 @@ ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 sudo systemctl restart nginx
 sudo systemctl enable nginx
+
+# Deploy backend
+aws ecr get-login-password --region eu-central-1 | \
+  docker login --username AWS --password-stdin $ECR_REGISTRY
+
+docker pull $ECR_REGISTRY/$REPO_NAME:latest
+
+docker run -d \
+  --name fittrack-backend \
+  --restart always \
+  -p 8000:8000 \
+  -e DB_HOST=$DB_HOST \
+  -e DB_SECRET_ARN=$DB_SECRET_ARN \
+  -e S3_BUCKET_NAME=$S3_BUCKET \
+  -e DB_PORT=5432 \
+  -e DB_NAME=fittrack \
+  -e AWS_REGION=eu-central-1 \
+  $ECR_REGISTRY/$REPO_NAME:latest
