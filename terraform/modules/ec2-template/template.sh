@@ -98,7 +98,7 @@ sudo systemctl enable nginx
 # Add to end of template.sh after Nginx setup
 
 # Pull frontend build from S3
-aws s3 sync s3://YOUR_FRONTEND_BUCKET/ /var/www/html/ --delete
+sudo aws s3 sync s3://YOUR_FRONTEND_BUCKET/ /var/www/html/ --delete
 
 
 
