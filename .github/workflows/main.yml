@@ -242,7 +242,7 @@ jobs:
             --targets "Key=tag:Environment,Values=staging" \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
-              "aws s3 sync s3://${{ needs.deploy.outputs.frontend_bucket_name }}/ /var/www/html/ --delete",
+              "sudo aws s3 sync s3://${{ needs.deploy.outputs.frontend_bucket_name }}/ /var/www/html/ --delete",
               "sudo systemctl restart nginx"
             ]' \
             --comment "Deploy frontend build from S3 to EC2" \
