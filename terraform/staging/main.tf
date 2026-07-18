@@ -34,6 +34,7 @@ module "iam" {
   bucket_arn                          = module.s3.bucket_arn
   frontend_bucket_arn                 = module.s3.frontend_bucket_arn
   frontend_bucket_name                = module.s3.frontend_bucket_name
+  db_secret_arn                       = module.rds.db_secret_arn
 }
 
 
