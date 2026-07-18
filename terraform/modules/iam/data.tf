@@ -48,7 +48,7 @@ data "aws_iam_policy_document" "ec2_permissions" {
       "secretsmanager:GetSecretValue"
     ]
     resources = [
-      "arn:aws:secretsmanager:*:*:secret:db-password-*" # Replace with your exact Secret ARN
+      var.db_secret_arn
     ]
   }
 }
