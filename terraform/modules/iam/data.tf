@@ -25,6 +25,24 @@ data "aws_iam_policy_document" "ec2_permissions" {
     ]
     resources = ["*"] # GetAuthorizationToken requires "*"
   }
+
+  ################### Frontend Bucket (Read Only) ###################
+  statement {
+    sid    = "FrontendBucketRead"
+    effect = "Allow"
+
+    actions = [
+      "s3:ListBucket",
+      "s3:GetObject"
+    ]
+
+    resources = [
+      var.frontend_bucket_arn,
+      "${var.frontend_bucket_arn}/*"
+    ]
+  }
+
+  
 # S3: Upload and retrieve workout media
   statement {
     sid    = "S3MediaAccess"
@@ -37,9 +55,6 @@ data "aws_iam_policy_document" "ec2_permissions" {
     resources = [
       var.bucket_arn, # Bucket ARN from S3 module output
       "${var.bucket_arn}/*",
-
-      var.frontend_bucket_arn,
-      "${var.frontend_bucket_arn}/*"
     ]
   }
 
