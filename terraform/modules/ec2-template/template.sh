@@ -7,7 +7,7 @@ DB_SECRET_ARN=$(aws ssm get-parameter --name "/fittrack/staging/db_secret_arn" -
 S3_BUCKET=$(aws ssm get-parameter --name "/fittrack/staging/media_bucket" --query "Parameter.Value" --output text --region eu-central-1)
 ECR_REGISTRY=$(aws ssm get-parameter --name "/fittrack/staging/ecr_registry" --query "Parameter.Value" --output text --region eu-central-1)
 REPO_NAME=$(aws ssm get-parameter --name "/fittrack/staging/backend_repo_name" --query "Parameter.Value" --output text --region eu-central-1)
-
+FRONTEND_BUCKET=$(aws ssm get-parameter --name "/fittrack/staging/frontend_bucket" --query "Parameter.Value" --output text --region eu-central-1)
 
 
 # Update system
@@ -94,6 +94,14 @@ ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 sudo systemctl restart nginx
 sudo systemctl enable nginx
 
+
+# Add to end of template.sh after Nginx setup
+
+# Pull frontend build from S3
+aws s3 sync s3://YOUR_FRONTEND_BUCKET/ /var/www/html/ --delete
+
+
+
 # Deploy backend
 aws ecr get-login-password --region eu-central-1 | \
   docker login --username AWS --password-stdin $ECR_REGISTRY
@@ -111,3 +119,5 @@ docker run -d \
   -e DB_NAME=fittrack \
   -e AWS_REGION=eu-central-1 \
   $ECR_REGISTRY/$REPO_NAME:latest
+  # Restart Nginx to serve files
+systemctl restart nginx
