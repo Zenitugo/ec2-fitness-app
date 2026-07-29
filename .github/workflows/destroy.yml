@@ -1,4 +1,4 @@
-name: Destroy Microservice Infrastructure
+name: Destroy Fittrack Infrastructure
 
 on:
   workflow_dispatch: # Manual trigger 
@@ -30,8 +30,14 @@ jobs:
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
-      - name: Delete Infrastructure
+      - name: Delete Compute Infrastructure
         run: |
-            cd terraform/staging
+            cd terraform/compute
+            terraform init
+            terraform destroy -auto-approve -var-file='values.tfvars'          
+
+      - name: Delete foundational Infrastructure
+        run: |
+            cd terraform/foundational
             terraform init
             terraform destroy -auto-approve -var-file='values.tfvars'          
