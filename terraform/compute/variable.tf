@@ -1,4 +1,3 @@
-variable "vpc_cidr_block" {}
 variable "environment_name" {}
 variable "region" {}
 variable "image_id" {}
@@ -6,12 +5,7 @@ variable "instance_type" {}
 variable "min_size" {}
 variable "max_size" {}
 variable "desired_capacity" {}
-variable "Instance_profile_name" {}
-variable "role_name" {}
-variable "custom_policy_name" {}
 variable "bucket_prefix" {}
-variable "cloudfront_oac_name" {}
-variable "db_username" {}
 variable "project_name" {}
 variable "cpu_high_threshold" {}
 variable "cpu_low_threshold" {}
