@@ -214,8 +214,16 @@ jobs:
       
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
+        
+      - name: Debug backend
+        working-directory: terraform/compute
+        run: |
+          pwd
+          ls -la
+          aws sts get-caller-identity
+          aws s3 ls s3://ugochi-project1-buck/fitness-app/
+            # Create infrastructure
 
-      # Create infrastructure
       - name: Creating compute infrastructure with Terraform
         run: |
           echo "Creating infrastructure with Terraform..."
