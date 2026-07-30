@@ -73,7 +73,7 @@ jobs:
       - name: Retrieve Terraform Outputs
         id: terraform-outputs
         run: |
-          cd terraform/compute
+          cd terraform/foundational
 
           ALB_DNS=$(terraform output -raw alb_dns_name)
 
