@@ -17,7 +17,7 @@ module "autoscaling" {
   min_size                            = var.min_size
   max_size                            = var.max_size
   desired_capacity                    = var.desired_capacity
-  target_group_arn                    = module.alb.target_group_arn
+  target_group_arn                    = data.terraform_remote_state.foundation.outputs.target_group_arn
 }
 
 
