@@ -63,3 +63,8 @@ output "private_subnet_2_id" {
 output "alb_dns_name" {
     value = module.alb.alb_dns_name
 }
+
+################# Export Target Group ARN #####################
+output "target_group_arn" {
+  value = module.alb.target_group_arn
+}
