@@ -1,7 +1,33 @@
 #!/bin/bash
 
+#Log all output
+exec > >(tee /var/log/user-data.log | logger -t user-data) 2>&1
+set -euxo pipefail
 
+REGION="eu-central-1"
+
+#########################################
+# Update system
+#########################################
+
+apt-get update -y
+apt-get upgrade -y
+
+#########################################
+# Install AWS CLI (if missing)
+#########################################
+
+if ! command -v aws >/dev/null 2>&1; then
+    apt-get install -y unzip curl
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
+    unzip -q awscliv2.zip
+    ./aws/install
+fi
+
+
+######################################################
 # Fetch values from SSM Parameter Store at boot
+######################################################
 DB_HOST=$(aws ssm get-parameter --name "/fittrack/staging/db_host" --query "Parameter.Value" --output text --region eu-central-1)
 DB_SECRET_ARN=$(aws ssm get-parameter --name "/fittrack/staging/db_secret_arn" --query "Parameter.Value" --output text --region eu-central-1)
 S3_BUCKET=$(aws ssm get-parameter --name "/fittrack/staging/media_bucket" --query "Parameter.Value" --output text --region eu-central-1)
@@ -10,24 +36,30 @@ REPO_NAME=$(aws ssm get-parameter --name "/fittrack/staging/backend_repo_name" -
 FRONTEND_BUCKET=$(aws ssm get-parameter --name "/fittrack/staging/frontend_bucket" --query "Parameter.Value" --output text --region eu-central-1)
 
 
-# Update system
-apt-get update -y
-apt-get upgrade -y
-
+############################################
 # Install Docker
-apt-get install -y ca-certificates curl gnupg
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-chmod a+r /etc/apt/keyrings/docker.gpg
+###############################################
+if ! command -v docker >/dev/null 2>&1; then
 
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  tee /etc/apt/sources.list.d/docker.list > /dev/null
+    apt-get install -y ca-certificates curl gnupg
 
-apt-get update -y
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    install -m 0755 -d /etc/apt/keyrings
 
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+        | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+    chmod a+r /etc/apt/keyrings/docker.gpg
+
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+      | tee /etc/apt/sources.list.d/docker.list >/dev/null
+
+    apt-get update -y
+
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+fi
 # Start and enable Docker
 systemctl start docker
 systemctl enable docker
@@ -35,28 +67,107 @@ systemctl enable docker
 # Add ubuntu user to docker group
 usermod -a -G docker ubuntu
 
-# Install AWS CLI
-apt-get install -y unzip
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-./aws/install
 
-# Install SSM agent
-snap install amazon-ssm-agent --classic
-systemctl start snap.amazon-ssm-agent.amazon-ssm-agent
+#!/bin/bash
+
+# Log all output
+exec > >(tee /var/log/user-data.log | logger -t user-data) 2>&1
+set -euxo pipefail
+
+REGION="eu-central-1"
+
+#########################################
+# Update system
+#########################################
+
+apt-get update -y
+apt-get upgrade -y
+
+#########################################
+# Install AWS CLI (if missing)
+#########################################
+
+if ! command -v aws >/dev/null 2>&1; then
+    apt-get install -y unzip curl
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
+    unzip -q awscliv2.zip
+    ./aws/install
+fi
+
+#########################################
+# Fetch SSM Parameters
+#########################################
+
+DB_HOST=$(aws ssm get-parameter --name "/fittrack/staging/db_host" --query "Parameter.Value" --output text --region "$REGION")
+DB_SECRET_ARN=$(aws ssm get-parameter --name "/fittrack/staging/db_secret_arn" --query "Parameter.Value" --output text --region "$REGION")
+S3_BUCKET=$(aws ssm get-parameter --name "/fittrack/staging/media_bucket" --query "Parameter.Value" --output text --region "$REGION")
+ECR_REGISTRY=$(aws ssm get-parameter --name "/fittrack/staging/ecr_registry" --query "Parameter.Value" --output text --region "$REGION")
+REPO_NAME=$(aws ssm get-parameter --name "/fittrack/staging/backend_repo_name" --query "Parameter.Value" --output text --region "$REGION")
+FRONTEND_BUCKET=$(aws ssm get-parameter --name "/fittrack/staging/frontend_bucket" --query "Parameter.Value" --output text --region "$REGION")
+
+#########################################
+# Install Docker (if missing)
+#########################################
+
+if ! command -v docker >/dev/null 2>&1; then
+
+    apt-get install -y ca-certificates curl gnupg
+
+    install -m 0755 -d /etc/apt/keyrings
+
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+        | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+    chmod a+r /etc/apt/keyrings/docker.gpg
+
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+      | tee /etc/apt/sources.list.d/docker.list >/dev/null
+
+    apt-get update -y
+
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+fi
+
+systemctl enable docker
+systemctl start docker
+
+usermod -aG docker ubuntu
+
+#########################################
+# Install SSM Agent
+#########################################
+
+if ! systemctl list-unit-files | grep -q amazon-ssm-agent; then
+    snap install amazon-ssm-agent --classic
+fi
+
 systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent
+systemctl start snap.amazon-ssm-agent.amazon-ssm-agent
 
-# Install CloudWatch agent
-wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
-dpkg -i amazon-cloudwatch-agent.deb
-systemctl start amazon-cloudwatch-agent
+#########################################
+# Install CloudWatch Agent
+#########################################
+
+if ! dpkg -l | grep -q amazon-cloudwatch-agent; then
+    wget -q https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+    dpkg -i amazon-cloudwatch-agent.deb
+fi
+
 systemctl enable amazon-cloudwatch-agent
+systemctl start amazon-cloudwatch-agent
 
-chown ubuntu:ubuntu /home/ubuntu/docker-compose.yml
 
+#########################################
+# Install Nginx (if missing)
+#########################################
 
-# Install Nginx on EC2
-sudo apt-get install -y nginx
+if ! command -v nginx >/dev/null 2>&1; then
+    apt-get install -y nginx
+fi
+
 
 
 # Create Nginx config directly (no file copy needed)
@@ -95,18 +206,25 @@ sudo systemctl restart nginx
 sudo systemctl enable nginx
 
 
-# Add to end of template.sh after Nginx setup
+#########################################
+# Sync Frontend
+#########################################
 
-# Pull frontend build from S3
-sudo aws s3 sync s3://YOUR_FRONTEND_BUCKET/ /var/www/html/ --delete
+aws s3 sync "s3://$FRONTEND_BUCKET/" /var/www/html/ --delete
 
 
 
-# Deploy backend
-aws ecr get-login-password --region eu-central-1 | \
+#########################################
+# Deploy Backend
+#########################################
+
+aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ECR_REGISTRY
 
-docker pull $ECR_REGISTRY/$REPO_NAME:latest
+docker pull "$ECR_REGISTRY/$REPO_NAME:latest"
+
+docker stop fittrack-backend || true
+docker rm fittrack-backend || true
 
 docker run -d \
   --name fittrack-backend \
