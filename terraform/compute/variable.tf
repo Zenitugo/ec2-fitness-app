@@ -1,11 +1,8 @@
 variable "environment_name" {}
-variable "region" {}
 variable "image_id" {}
 variable "instance_type" {}
 variable "min_size" {}
 variable "max_size" {}
 variable "desired_capacity" {}
-variable "bucket_prefix" {}
-variable "project_name" {}
 variable "cpu_high_threshold" {}
 variable "cpu_low_threshold" {}
