@@ -56,3 +56,10 @@ output "private_subnet_1_id" {
 output "private_subnet_2_id" {
   value = module.vpc.private_subnet_2_id
 }
+
+
+###################### Export ALB DNS NAME #######################
+
+output "alb_dns_name" {
+    value = module.alb.alb_dns_name
+}
