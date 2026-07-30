@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs: 
       backend_repo_name: ${{ steps.ecr-uris.outputs.backend_repo_name }} 
-      alb_dns_name: ${{ steps.terraform-outputs.outputs.alb_dns_name }}
       frontend_bucket_name: ${{ steps.frontend-bucket.outputs.frontend_bucket_name }}
+      alb_dns_name: ${{ steps.terraform-outputs.outputs.alb_dns_name }}
             
     steps:
 
@@ -51,28 +51,18 @@ jobs:
       - name: Retrieve ECR repository URI
         id: ecr-uris
         run: |
-          cd terraform/staging
+          cd terraform/foundational
           BACKEND_URI=$(terraform output -raw backend_repository_url)
           REPO_NAME=$(basename "$BACKEND_URI")
           echo "Repository Name: $REPO_NAME"
           echo "backend_repo_name=$REPO_NAME" >> "$GITHUB_OUTPUT"
         # echo "backend_uri=$BACKEND_URI" >> $GITHUB_OUTPUT
 
-      - name: Retrieve Terraform Outputs
-        id: terraform-outputs
-        run: |
-          cd terraform/staging
-
-          ALB_DNS=$(terraform output -raw alb_dns_name)
-
-          echo "alb_dns_name=$ALB_DNS" >> "$GITHUB_OUTPUT"
-
-          echo "ALB DNS: $ALB_DNS"
 
       - name: Retrieve Frontend Bucket Name
         id: frontend-bucket
         run: |
-          cd terraform/staging
+          cd terraform/foundational
 
           FRONTEND_BUCKET_NAME=$(terraform output -raw frontend_bucket_name)
 
@@ -80,6 +70,17 @@ jobs:
 
           echo "Frontend Bucket Name: $FRONTEND_BUCKET_NAME"
                          
+      - name: Retrieve Terraform Outputs
+        id: terraform-outputs
+        run: |
+          cd terraform/compute
+
+          ALB_DNS=$(terraform output -raw alb_dns_name)
+
+          echo "alb_dns_name=$ALB_DNS" >> "$GITHUB_OUTPUT"
+
+          echo "ALB DNS: $ALB_DNS"
+
 
 
       - name: Verify step output
@@ -132,15 +133,18 @@ jobs:
           echo "✅ Successfully pushed: $ECR_BACKEND_URI:latest"
 
 
+
+
   # ============================================================
   # JOB 3 — UPLOAD FRONTEND BUILD ARTIFACTS TO S3 BUCKET 
   # ============================================================
   deploy-frontend-build-artifacts-to-s3:
     name: Deploy frontend build artifacts to s3
-    needs: [deploy]
+    needs: 
+      - deploy
     runs-on: ubuntu-latest
     env:
-      ALB_DNS_NAME: ${{ needs.deploy.outputs.alb_dns_name }}
+      ALB_DNS_NAME: ${{ needs.create_compute_infra.outputs.alb_dns_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -166,7 +170,7 @@ jobs:
 
       - name: Set API URL
         run: |
-          echo "VITE_API_URL=http://$ALB_DNS_NAME" >> "$GITHUB_ENV"
+          echo "VITE_API_URL=http://${{env.ALB_DNS_NAME}}" >> "$GITHUB_ENV"
                     
 
       - name: Install dependencies and build frontend
@@ -176,14 +180,10 @@ jobs:
           npm run build
         env:
           VITE_API_URL: ${{ env.VITE_API_URL }}
-
-      - name: Set frontend bucket name
-        run: |
-          echo "S3_FRONTEND_BUCKET_NAME=${{ needs.deploy.outputs.frontend_bucket_name }}" >> "$GITHUB_ENV"
           
       - name: Sync build to S3 bucket
         run: |
-          aws s3 sync fitness/frontend/dist s3://$S3_FRONTEND_BUCKET_NAME --delete
+          aws s3 sync fitness/frontend/dist s3://${{ needs.deploy.outputs.frontend_bucket_name }} --delete
 
 
 
@@ -191,9 +191,11 @@ jobs:
   # JOB 4 —  CREATE COMPUTE INFRASTRUCTURE
   # ============================================================  
   create_compute_infra:
-    runs-on: ubuntu-latest        
+    runs-on: ubuntu-latest     
+    needs: 
+      - deploy-backend-to-ec2   
+      - deploy-frontend-build-artifacts-to-s3
     steps:
-
       # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
