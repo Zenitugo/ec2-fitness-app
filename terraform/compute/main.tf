@@ -8,18 +8,6 @@ module "ec2_template" {
 }
 
 
-
-module "alb" {
-  source                              = "../modules/alb"
-  alb_sg                              = data.terraform_remote_state.foundation.outputs.alb_sg
-  public_subnet_1_id                  = data.terraform_remote_state.foundation.outputs.public_subnet_1_id
-  public_subnet_2_id                  = data.terraform_remote_state.foundation.outputs.public_subnet_2_id
-  environment_name                    = var.environment_name
-  vpc_id                              = data.terraform_remote_state.foundation.outputs.vpc_id
-}
-
-
-
 module "autoscaling" {
   source                              = "../modules/autoscaling"
   environment_name                    = var.environment_name
