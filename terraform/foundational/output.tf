@@ -44,25 +44,7 @@ output "alb_sg" {
 ############## Export Instance Profile Name ##################
 output "instance_profile_name" {
   value = module.iam.instance_profile_name
-}
 
-
-################ Export VPC ID ################
-output "vpc_id" {
-  value = module.vpc.vpc_id
-}
-
-
-############### Export Public subnet 1 ID ###############
-output "public_subnet_1_id" {
-  value = module.vpc.public_subnet_1_id
-}
-
-
-############### Export Public subnet 2 ID ###############
-
-output "public_subnet_2_id" {
-  value = module.vpc.public_subnet_2_id
 }
 
 ############### Export Private subnet 1 ID ###############
