@@ -46,7 +46,7 @@ resource "aws_ssm_parameter" "frontend_bucket" {
 resource "aws_ssm_parameter" "ecr_registry" {
   name        = "/${var.project_name}/${var.environment_name}/ecr_registry"
   type        = "String"
-  value       = "${data.aws_caller_identity.current}.dkr.ecr.${var.region}.amazonaws.com"
+  value       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
 
 
   tags = {
