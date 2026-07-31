@@ -1,6 +1,6 @@
 name: Deploy FitTrack App
 
-on:
+#on:
   push:
     branches:
       - master
@@ -215,21 +215,6 @@ jobs:
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
-      - name: Debug backend
-        working-directory: terraform/compute
-        run: |
-          pwd
-          ls -la
-          aws sts get-caller-identity
-          aws s3 ls s3://ugochi-project1-buck/fitness-app/
-
-
-      - name: Debug foundation state
-        working-directory: terraform/compute
-        run: |
-          terraform state pull || true
-          aws s3 cp s3://ugochi-project1-buck/fitness-app/terraform.tfstate foundation.json
-          cat foundation.json | head -40
 
       # Create infrastructure
       - name: Creating compute infrastructure with Terraform
