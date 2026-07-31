@@ -6,13 +6,15 @@ resource "aws_iam_role" "ec2_role" {
 }
 
 
-################### Attach Custom Policy to Role ###################
+################### Create Custom Policy to ###################
 resource "aws_iam_policy" "ec2_custom_policy" {
   name         = var.custom_policy_name
   description = "Permissions for ECR pull, S3 workout media, and Secrets Manager"
   policy      = data.aws_iam_policy_document.ec2_permissions.json
 }
 
+
+########### Attach Custom Policy to Role #########################
 resource "aws_iam_role_policy_attachment" "custom_attach" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = aws_iam_policy.ec2_custom_policy.arn
