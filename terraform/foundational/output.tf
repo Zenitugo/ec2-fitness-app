@@ -10,26 +10,6 @@ output "frontend_bucket_name" {
 }
 
 
-##############   Export the RDS ENdpoint #########################
-output "db_endpoint" {
-  value = module.rds.db_endpoint
-}
-
-
-################ Export Secret ARN ###########################
-output "db_secret_arn" {
-  value = module.rds.db_secret_arn
-  sensitive = true
-}
-
-
-############### Export Media Bucket ######################
-
-output "media_bucket_id" {
-  value = module.s3.media_bucket_id
-}
-
-
 ####################### Export Backend Sg ####################
 output "backend_sg" {
   value = module.sg.backend_sg
