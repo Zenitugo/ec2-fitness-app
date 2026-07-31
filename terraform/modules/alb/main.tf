@@ -13,7 +13,7 @@ resource "aws_lb" "fittrack_load_balancer" {
 ################## Create a Target Group for the ALB ######################
 resource "aws_lb_target_group" "fittrack_app_target_group" {
     name = "${var.environment_name}-fittrack-app-tg"
-    port = 8000
+    port = 80
     protocol = "HTTP"
     vpc_id = var.vpc_id
     target_type = "instance"
@@ -25,6 +25,7 @@ resource "aws_lb_target_group" "fittrack_app_target_group" {
         interval = 30
         path = "/health"
         protocol = "HTTP"
+        port = "traffic-port"
     }
 }
 
