@@ -135,7 +135,7 @@ sudo systemctl enable nginx
 # Fetch values from SSM Parameter Store at boot
 ######################################################
 DB_HOST=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/db_host" --query "Parameter.Value" --output text --region $REGION)
-DB_SECRET_ARN=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/db_secret_arn" --query "Parameter.Value" --output text --region $REGION)
+DB_SECRET_ARN=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/db_secret_arn" --with-decryption --query "Parameter.Value" --output text --region $REGION)
 MEDIA_BUCKET=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/media_bucket" --query "Parameter.Value" --output text --region $REGION)
 ECR_REGISTRY=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/ecr_registry" --query "Parameter.Value" --output text --region $REGION)
 REPO_NAME=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/backend_repo_name" --query "Parameter.Value" --output text --region $REGION)
