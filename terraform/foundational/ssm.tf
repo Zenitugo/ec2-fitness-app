@@ -57,7 +57,7 @@ resource "aws_ssm_parameter" "ecr_registry" {
 resource "aws_ssm_parameter" "backend_repo_name" {
   name        = "/${var.project_name}/${var.environment_name}/backend_repo_name"
   type        = "String"
-  value       = module.ecr.backend_repository_url
+  value       = module.ecr.backend_repo_name
 
   tags = {
     Environment = var.environment_name
