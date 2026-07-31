@@ -30,11 +30,11 @@ jobs:
       - name: Mask AWS Account ID
         run: echo "::add-mask::${{ secrets.AWS_ACCOUNT_ID }}"
 
-      # - name: Delete Compute Infrastructure
-      #   run: |
-      #       cd terraform/compute
-      #       terraform init
-      #       terraform destroy -auto-approve -var-file='values.tfvars'          
+      - name: Delete Compute Infrastructure
+        run: |
+            cd terraform/compute
+            terraform init
+            terraform destroy -auto-approve -var-file='values.tfvars'          
 
       - name: Delete foundational Infrastructure
         run: |
