@@ -11,6 +11,8 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
+
+
 ###################  Create Custom IAM Policy for EC2 Permissions ###################
 data "aws_iam_policy_document" "ec2_permissions" {
   # ECR: Pull Docker images on startup
@@ -63,10 +65,12 @@ data "aws_iam_policy_document" "ec2_permissions" {
     sid    = "SecretsManagerRead"
     effect = "Allow"
     actions = [
-      "secretsmanager:GetSecretValue"
+      "secretsmanager:GetSecretValue",
+      "kms:Decrypt"
     ]
     resources = [
-      var.db_secret_arn
+      var.db_secret_arn,
+      "*"
     ]
   }
 }
