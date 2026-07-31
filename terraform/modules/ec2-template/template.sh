@@ -32,7 +32,7 @@ fi
 ###############################################
 if ! command -v docker >/dev/null 2>&1; then
 
-    apt-get install -y ca-certificates curl gnupg
+    sudo apt-get install -y ca-certificates curl gnupg
 
     install -m 0755 -d /etc/apt/keyrings
 
@@ -46,9 +46,9 @@ if ! command -v docker >/dev/null 2>&1; then
       $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
       | tee /etc/apt/sources.list.d/docker.list >/dev/null
 
-    apt-get update -y
+    sudo apt-get update -y
 
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 fi
 # Start and enable Docker
@@ -134,7 +134,7 @@ sudo systemctl enable nginx
 ######################################################
 # Fetch values from SSM Parameter Store at boot
 ######################################################
-DB_HOST=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/db_host" --query "Parameter.Value" --output text --region $AWS_REGION)
+DB_HOST=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/db_host" --query "Parameter.Value" --output text --region $REGION)
 DB_SECRET_ARN=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/db_secret_arn" --query "Parameter.Value" --output text --region $REGION)
 MEDIA_BUCKET=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/media_bucket" --query "Parameter.Value" --output text --region $REGION)
 ECR_REGISTRY=$(aws ssm get-parameter --name "/$APP_NAME/$ENVIRONMENT/ecr_registry" --query "Parameter.Value" --output text --region $REGION)
@@ -156,7 +156,7 @@ aws s3 sync "s3://$FRONTEND_BUCKET/" /var/www/html/ --delete
 aws ecr get-login-password --region $REGION | \
   docker login --username AWS --password-stdin $ECR_REGISTRY
 
-ocker stop fittrack-backend || true
+docker stop fittrack-backend || true
 docker rm fittrack-backend || true
 
 
