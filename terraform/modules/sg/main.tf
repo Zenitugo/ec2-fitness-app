@@ -29,9 +29,9 @@ resource "aws_security_group" "backend_sg" {
     vpc_id      = var.vpc_id
 
     ingress {
-        description      = "Allow traffic from frontend servers"
-        from_port        = 8000
-        to_port          = 8000
+        description      = "Allow traffic from alb"
+        from_port        = 80
+        to_port          = 80
         protocol         = "tcp"
         security_groups  = [aws_security_group.alb_sg.id]
     }
