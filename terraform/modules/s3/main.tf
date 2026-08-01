@@ -1,6 +1,6 @@
 ############################## Create s3 Bucket for storing media photos ##############################
 
-  # Media Bucket (Fully Private)
+  # Media Bucket (Fully Public)
 resource "aws_s3_bucket" "media_bucket" {
   bucket_prefix = var.bucket_prefix
 }
@@ -8,12 +8,14 @@ resource "aws_s3_bucket" "media_bucket" {
 resource "aws_s3_bucket_public_access_block" "media_bucket_privacy" {
   bucket = aws_s3_bucket.media_bucket.id
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
 
+### Note: Making it fully public is not a good way to do it in production. 
+## The better option is to make it fully private and allow the backend generates pre-signed urls
 
 
 ########################## Create S3 Bucket for Frontend Hosting (Public) ##########################
