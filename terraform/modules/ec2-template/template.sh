@@ -99,6 +99,8 @@ cat > /etc/nginx/sites-available/default << 'NGINXCONF'
 server {
     listen 80;
 
+    client_max_body_size 50M;
+
     # Serve React frontend
     location / {
         root /var/www/html;
