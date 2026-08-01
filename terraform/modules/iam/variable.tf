@@ -5,5 +5,5 @@ variable "bucket_arn" {}
 variable "frontend_bucket_arn" {}
 variable "frontend_bucket_name" {}
 variable "db_secret_arn" {}
-variable "bucket_prefix" {}
+variable "bucket_name" {}
 # variable "cloudfront_distribution_arn" {}
