@@ -14,9 +14,13 @@ resource "aws_s3_bucket_public_access_block" "media_bucket_privacy" {
   restrict_public_buckets = false
 }
 
-### Note: Making it fully public is not a good way to do it in production. 
-## The better option is to make it fully private and allow the backend generates pre-signed urls
-
+# NOTE:
+# This bucket is intentionally public for this portfolio project
+# so uploaded images can be accessed directly.
+#
+# In a production environment, the recommended approach is to keep
+# the bucket private and have the backend generate pre-signed URLs
+# (or serve the content through CloudFront) for secure access.
 
 ########################## Create S3 Bucket for Frontend Hosting (Public) ##########################
 # Frontend Bucket
