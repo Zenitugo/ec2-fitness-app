@@ -160,7 +160,6 @@ npm run dev
 ## 🏗 Architecture
 
 
-
 ---
 
 
@@ -171,7 +170,7 @@ npm run dev
 sudo apt-get install -y stress
 
 # Spike CPU to trigger scale up alarm
-stress --cpu 4 --timeout 300
+stress --cpu 2 --timeout 300
 ```
 
 Watch CloudWatch alarms fire and a new EC2 instance launch in the Auto Scaling Group.
