@@ -159,6 +159,80 @@ npm run dev
 
 ## 🏗 Architecture
 
+```
+                                FitTrack Architecture
+
+                                     Users
+                           (Web Browser / Mobile)
+                                          │
+                                   HTTP (Port 80)
+                                          │
+                                          ▼
+                         ┌─────────────────────────┐
+                         │ Application Load Balancer│
+                         └─────────────────────────┘
+                                          │
+                                          ▼
+                    ┌────────────────────────────────────┐
+                    │      Auto Scaling Group            │
+                    │        Private Subnets             │
+                    │                                    │
+                    │  ┌─────────────────────────────┐   │
+                    │  │ EC2 Instance                │   │
+                    │  │ • Docker                    │   │
+                    │  │ • FastAPI                   │   │
+                    │  │ • Nginx                     │   │
+                    │  │ • React (/var/www/html)     │   │
+                    │  └─────────────────────────────┘   │
+                    │                 ...                │
+                    └────────────────────────────────────┘
+                              │        │        │        │
+              ┌───────────────┘        │        └───────────────┐
+              ▼                        ▼                        ▼
+      Amazon RDS                Amazon S3                Systems Manager
+      PostgreSQL                Workout Media            Parameter Store
+                                      │
+                                      ▼
+                              Secrets Manager
+                             (Database Credentials)
+
+                              ▲
+                              │
+                         CloudWatch
+                  Metrics • Alarms • Auto Scaling
+
+──────────────────────────────────────────────────────────────────────────────
+
+                           GitHub Actions CI/CD
+
+Developer
+    │
+    ▼
+GitHub
+    │
+    ▼
+Terraform (Foundation)
+    │
+    ├──────────────┬─────────────────┐
+    ▼              ▼                 ▼
+Build Backend   Build Frontend    (Parallel)
+    │              │
+    ▼              ▼
+Amazon ECR     Amazon S3 (Frontend Build)
+    └──────────────┬───────────────┘
+                   ▼
+         Terraform (Compute)
+                   │
+                   ▼
+          EC2 User Data (Bash)
+          • Pull backend image from ECR
+          • Copy frontend build from S3
+          • Start Docker container
+          • Start Nginx
+
+
+
+```
 
 
 ---
@@ -175,6 +249,17 @@ stress --cpu 4 --timeout 300
 ```
 
 Watch CloudWatch alarms fire and a new EC2 instance launch in the Auto Scaling Group.
+
+---
+
+## Future Improvements
+
+- Replace public media bucket with private bucket and pre-signed URLs
+- Serve media through Amazon CloudFront
+- Add HTTPS using AWS Certificate Manager
+- Implement ECS/Fargate deployment
+- Add Prometheus and Grafana monitoring
+- Add integration tests to the CI/CD pipeline
 
 ---
 
