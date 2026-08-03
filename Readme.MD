@@ -260,6 +260,8 @@ Watch CloudWatch alarms fire and a new EC2 instance launch in the Auto Scaling G
 - Add Prometheus and Grafana monitoring
 - Add integration tests to the CI/CD pipeline
 
+**Note:** Using Cloud Front was part of the original design. Due to service restrictions on my AWS account, CloudFront could not be provisioned, so the portfolio version uses a public media bucket to keep uploaded images accessible.
+
 ---
 
 ## 🎥 Demo
