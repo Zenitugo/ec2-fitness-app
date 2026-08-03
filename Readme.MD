@@ -13,7 +13,7 @@ How would I design, deploy, and automate a production-inspired application that 
 
 To answer that question, I built FitTrack.
 
-The infrastructure is split into Foundation and Compute Terraform layers, deployed through a five-job GitHub Actions CI/CD pipeline, and includes Infrastructure as Code, automated deployments, monitoring with CloudWatch, configuration management using AWS Systems Manager Parameter Store, and secure secret management with AWS Secrets Manager.
+The infrastructure is split into Foundation and Compute Terraform layers, deployed through a four-job GitHub Actions CI/CD pipeline, and includes Infrastructure as Code, automated deployments, monitoring with CloudWatch, configuration management using AWS Systems Manager Parameter Store, and secure secret management with AWS Secrets Manager.
 
 ---
 
