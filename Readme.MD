@@ -31,7 +31,7 @@ The infrastructure is split into Foundation and Compute Terraform layers, deploy
 - CloudWatch alarms and metrics for observability
 - Infrastructure split into foundation and compute Terraform layers
 - Remote state management between Terraform layers using S3
-- Five job GitHub Actions CI/CD pipeline with automated deployments via SSM
+- Four job GitHub Actions CI/CD pipeline with automated deployments via SSM
 
 ---
 
